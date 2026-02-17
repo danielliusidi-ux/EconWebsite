@@ -1,0 +1,247 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Economics Practice Platform"
+msgstr "经济学练习平台"
+
+msgid "Welcome to Economics Practice Platform"
+msgstr "欢迎使用经济学练习平台"
+
+msgid "This platform is designed to help economics students prepare for their exams with official past papers. We support the following exams:"
+msgstr "本平台旨在帮助经济学学生使用官方过往真题备考。我们支持以下考试："
+
+msgid "AP Economics (Micro + Macro)"
+msgstr "AP经济学（微观+宏观）"
+
+msgid "IGCSE Cambridge Economics"
+msgstr "IGCSE剑桥经济学"
+
+msgid "A-level Economics (AS + A2)"
+msgstr "A-level经济学（AS + A2）"
+
+msgid "DSE Economics"
+msgstr "DSE经济学"
+
+msgid "Our core features include:"
+msgstr "我们的核心功能包括："
+
+msgid "Official past paper questions"
+msgstr "官方过往真题"
+
+msgid "Instant and accurate feedback"
+msgstr "即时精准反馈"
+
+msgid "Targeted similar questions for wrong answers"
+msgstr "错题定向推送同类真题"
+
+msgid "Responsive design for desktop and tablet use"
+msgstr "适配电脑/平板端使用"
+
+msgid "Bilingual support (English and Chinese)"
+msgstr "支持中英双语"
+
+msgid "Start Practicing"
+msgstr "开始练习"
+
+msgid "Select Exam Type"
+msgstr "选择考试类型"
+
+msgid "Please choose the exam type you want to practice:"
+msgstr "请选择您要练习的考试类型："
+
+msgid "AP Economics"
+msgstr "AP经济学"
+
+msgid "Microeconomics + Macroeconomics"
+msgstr "微观经济学 + 宏观经济学"
+
+msgid "Microeconomics"
+msgstr "微观经济学"
+
+msgid "Macroeconomics"
+msgstr "宏观经济学"
+
+msgid "IGCSE Economics"
+msgstr "IGCSE经济学"
+
+msgid "Cambridge IGCSE Economics"
+msgstr "剑桥IGCSE经济学"
+
+msgid "A-level Economics"
+msgstr "A-level经济学"
+
+msgid "AS + A2 Levels"
+msgstr "AS + A2级别"
+
+msgid "DSE Economics"
+msgstr "DSE经济学"
+
+msgid "Hong Kong Diploma of Secondary Education"
+msgstr "香港中学文凭考试"
+
+msgid "Practice Now"
+msgstr "立即练习"
+
+msgid "Back"
+msgstr "返回"
+
+msgid "Submit Answers"
+msgstr "提交答案"
+
+msgid "Correct!"
+msgstr "正确！"
+
+msgid "Incorrect"
+msgstr "错误"
+
+msgid "Explanation:"
+msgstr "解析："
+
+msgid "Your Score"
+msgstr "您的得分"
+
+msgid "Congratulations!"
+msgstr "恭喜！"
+
+msgid "Keep practicing!"
+msgstr "继续练习！"
+
+msgid "Detailed Results"
+msgstr "详细结果"
+
+msgid "Wrong Questions"
+msgstr "错题"
+
+msgid "You can practice similar questions to improve your understanding:"
+msgstr "您可以练习同类题目以提高理解："
+
+msgid "Practice Again"
+msgstr "再次练习"
+
+msgid "Change Exam Type"
+msgstr "更换考试类型"
+
+msgid "View Wrong Questions"
+msgstr "查看错题"
+
+msgid "Your Wrong Questions"
+msgstr "您的错题"
+
+msgid "Here are the questions you've answered incorrectly. Practice similar questions to improve:"
+msgstr "以下是您回答错误的问题。练习同类题目以提高："
+
+msgid "Great! You haven't answered any questions incorrectly yet. Keep up the good work!"
+msgstr "太好了！您还没有回答错误的问题。继续保持！"
+
+msgid "Back to Practice"
+msgstr "返回练习"
+
+msgid "Similar Questions:"
+msgstr "同类题目："
+
+msgid "Here are similar questions on the topic of %s to help you improve:"
+msgstr "以下是关于%s主题的同类题目，帮助您提高："
+
+msgid "No similar questions found for this topic. Please check back later as we update our question bank."
+msgstr "未找到该主题的同类题目。请在我们更新题库后再次查看。"
+
+msgid "Back to Wrong Questions"
+msgstr "返回错题"
+
+msgid "Practice"
+msgstr "练习"
+
+msgid "Correct answer:"
+msgstr "正确答案："
+
+msgid "Your answer:"
+msgstr "您的答案："
+
+msgid "|"
+msgstr "|"
+
+msgid "of"
+msgstr "的"
+
+msgid "Question"
+msgstr "问题"
+
+msgid "Wrong Book"
+msgstr "错题本"
+
+msgid "Statistics"
+msgstr "统计"
+
+msgid "Today Completed"
+msgstr "今日完成"
+
+msgid "Today Accuracy"
+msgstr "今日准确率"
+
+msgid "Total Practiced"
+msgstr "累计练习"
+
+msgid "Advanced Placement"
+msgstr "AP课程"
+
+msgid "AP Microeconomics"
+msgstr "AP微观经济学"
+
+msgid "AP course covering market mechanisms, firm behavior and resource allocation"
+msgstr "涵盖市场机制、企业行为和资源配置的AP课程"
+
+msgid "Completed"
+msgstr "已完成"
+
+msgid "Accuracy"
+msgstr "准确率"
+
+msgid "questions"
+msgstr "题"
+
+msgid "AP Macroeconomics"
+msgstr "AP宏观经济学"
+
+msgid "AP course covering national economy and macroeconomic policies"
+msgstr "涵盖国民经济和宏观经济政策的AP课程"
+
+msgid "Cambridge International"
+msgstr "剑桥国际"
+
+msgid "Cambridge international secondary education certificate for ages 14-16"
+msgstr "针对14-16岁学生的剑桥国际中学教育证书"
+
+msgid "Advanced level qualification for students aged 16-19"
+msgstr "针对16-19岁学生的高级水平资格证书"
+
+msgid "Hong Kong Diploma"
+msgstr "香港文凭"
+
+msgid "Economics curriculum for the Hong Kong Diploma of Secondary Education"
+msgstr "香港中学文凭考试经济学课程"
+
+msgid "Submit Answer"
+msgstr "提交答案"
+
+msgid "Next Question"
+msgstr "下一题"
+
+msgid "Finish Practice"
+msgstr "完成练习"
+
+msgid "Practice Similar Questions"
+msgstr "练习同类题目"
+
+msgid "Easy"
+msgstr "简单"
+
+msgid "Medium"
+msgstr "中等"
+
+msgid "Hard"
+msgstr "困难"
+
+msgid "All"
+msgstr "全部"

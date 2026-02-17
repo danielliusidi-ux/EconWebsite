@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ _('Welcome to Economics Practice Platform') }}</h1>
+    <p>{{ _('This platform is designed to help economics students prepare for their exams with official past papers. We support the following exams:') }}</p>
+    
+    <ul>
+        <li>{{ _('AP Economics (Micro + Macro)') }}</li>
+        <li>{{ _('IGCSE Cambridge Economics') }}</li>
+        <li>{{ _('A-level Economics (AS + A2)') }}</li>
+        <li>{{ _('DSE Economics') }}</li>
+    </ul>
+    
+    <p>{{ _('Our core features include:') }}</p>
+    <ul>
+        <li>{{ _('Official past paper questions') }}</li>
+        <li>{{ _('Instant and accurate feedback') }}</li>
+        <li>{{ _('Targeted similar questions for wrong answers') }}</li>
+        <li>{{ _('Responsive design for desktop and tablet use') }}</li>
+        <li>{{ _('Bilingual support (English and Chinese)') }}</li>
+    </ul>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{{ url_for('select_exam') }}" class="btn">{{ _('Start Practicing') }}</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+        .wrong-book-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .wrong-book-header h1 {
+            margin: 0;
+        }
+
+        .wrong-question-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .difficulty-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .difficulty-easy {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .difficulty-medium {
+            background: #fff8e1;
+            color: #ef6c00;
+        }
+
+        .difficulty-hard {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
+
+    <div class="wrong-book-header">
+        <a href="{{ url_for('select_exam') }}" class="btn-outline" style="padding: 5px 10px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; text-decoration: none;"><i class="fas fa-arrow-left"></i></a>
+        <h1>{{ _('Your Wrong Questions') }}</h1>
+    </div>
+    
+    {% if wrong_questions %}
+        <p>{{ _('Here are the questions you\'ve answered incorrectly. Practice similar questions to improve:') }}</p>
+        
+        <div class="wrong-questions-list">
+            {% for question in wrong_questions %}
+                <div class="wrong-question-item">
+                    <div class="wrong-question-meta">
+                        <span class="topic-tag">{{ question.topic }}</span>
+                        {% if question.difficulty is defined and question.difficulty %}
+                            <span class="difficulty-badge difficulty-{{ question.difficulty|lower }}">{{ _(question.difficulty) }}</span>
+                        {% endif %}
+                    </div>
+                    <h3>{{ _('Question') }} {{ question.id }}</h3>
+                    <p>{{ question.question }}</p>
+                    <p><strong>{{ _('Correct answer:') }}</strong> {{ question.answer }}</p>
+                    <div class="explanation">
+                        <strong>{{ _('Explanation:') }}</strong> {{ question.explanation }}
+                    </div>
+                    {% if question.exam_type is defined and question.exam_type %}
+                        <a href="{{ url_for('practice_similar', exam_type=question.exam_type, topic=question.topic, exclude_id=question.id) }}" class="btn btn-secondary" style="margin-top: 10px;">{{ _('Practice Similar Questions') }}</a>
+                    {% else %}
+                        <a href="{{ url_for('similar_questions', topic=question.topic, exclude_id=question.id) }}" class="btn btn-secondary" style="margin-top: 10px;">{{ _('Practice Similar Questions') }}</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{{ _("Great! You haven't answered any questions incorrectly yet. Keep up the good work!") }}</p>
+    {% endif %}
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('select_exam') }}" class="btn">{{ _('Back to Practice') }}</a>
+    </div>
+{% endblock %}

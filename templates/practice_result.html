@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ _('Practice Results for') }} {{ exam_type|replace('_', ' ')|title }}</h1>
+    
+    <div class="score-display">
+        <h2>{{ _('Your Score') }}</h2>
+        <div class="score-number">{{ score }} / {{ total }}</div>
+        <p>{{ _('Congratulations!') if score == total else _('Keep practicing!') }}</p>
+    </div>
+    
+    <h2>{{ _('Detailed Results') }}</h2>
+    
+    {% for question in questions %}
+        <div class="question">
+            <h3>{{ _('Question') }} {{ question.id }}</h3>
+            <p>{{ question.question }}</p>
+            
+            <div class="options">
+                {% for option in question.options %}
+                    <div class="option">
+                        <input type="radio" name="answer_{{ question.id }}" value="{{ option.split(')')[0] }}" disabled {% if user_answers.get(question.id) == option.split(')')[0] %}checked{% endif %}>
+                        <label for="option_{{ question.id }}_{{ loop.index0 }}">{{ option }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            {% if user_answers.get(question.id) == question.answer %}
+                <div class="result correct">
+                    <strong>{{ _('Correct!') }}</strong> {{ _('Your answer:') }} {{ user_answers.get(question.id) }}
+                </div>
+            {% else %}
+                <div class="result incorrect">
+                    <strong>{{ _('Incorrect') }}</strong> {{ _('Your answer:') }} {{ user_answers.get(question.id) }} {{ _('|') }} {{ _('Correct answer:') }} {{ question.answer }}
+                </div>
+            {% endif %}
+            
+            <div class="explanation">
+                <strong>{{ _('Explanation:') }}</strong> {{ question.explanation }}
+            </div>
+        </div>
+    {% endfor %}
+    
+    {% if wrong_questions %}
+        <h2>{{ _('Wrong Questions') }}</h2>
+        <p>{{ _('You can practice similar questions to improve your understanding:') }}</p>
+        
+        <div class="wrong-questions-list">
+            {% for question in wrong_questions %}
+                <div class="wrong-question-item">
+                    <span class="topic-tag">{{ question.topic }}</span>
+                    <p>{{ question.question }}</p>
+                    <a href="{{ url_for('similar_questions', topic=question.topic) }}" class="btn btn-secondary" style="margin-top: 10px;">{{ _('Practice Similar Questions') }}</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('practice', exam_type=exam_type) }}" class="btn">{{ _('Practice Again') }}</a>
+        <a href="{{ url_for('select_exam') }}" class="btn btn-secondary" style="margin-left: 10px;">{{ _('Change Exam Type') }}</a>
+        <a href="{{ url_for('wrong_questions') }}" class="btn btn-secondary" style="margin-left: 10px;">{{ _('View Wrong Questions') }}</a>
+    </div>
+{% endblock %}

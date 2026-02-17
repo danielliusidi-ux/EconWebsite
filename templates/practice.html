@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Practice page styles */
+    .practice-header {
+        margin-bottom: 30px;
+    }
+    
+    .progress-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .progress-bar-bg {
+        flex-grow: 1;
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background-color: #3f51b5;
+        width: {{ (question_index + 1) / total_questions * 100 }}%;
+        transition: width 0.3s;
+    }
+    
+    .progress-text {
+        font-size: 14px;
+        color: #7f8c8d;
+        white-space: nowrap;
+    }
+    
+    .question-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    
+    .question-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #7f8c8d;
+    }
+
+    .meta-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .difficulty-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .difficulty-easy {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .difficulty-medium {
+        background: #fff8e1;
+        color: #ef6c00;
+    }
+
+    .difficulty-hard {
+        background: #ffebee;
+        color: #c62828;
+    }
+    
+    .question-text {
+        font-size: 18px;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+    
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .option-item {
+        position: relative;
+    }
+    
+    .option-item input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+    
+    .option-label {
+        display: block;
+        padding: 15px 20px;
+        border: 2px solid #f1f2f6;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #57606f;
+    }
+    
+    .option-item input[type="radio"]:checked + .option-label {
+        border-color: #3f51b5;
+        background-color: #e8eaf6;
+        color: #1a237e;
+    }
+    
+    /* Feedback styles */
+    .feedback-section {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 8px;
+        display: none; /* Hidden by default */
+    }
+    
+    .feedback-correct {
+        background-color: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        color: #2e7d32;
+    }
+    
+    .feedback-incorrect {
+        background-color: #ffebee;
+        border: 1px solid #ffcdd2;
+        color: #c62828;
+    }
+    
+    .explanation-box {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        font-size: 14px;
+    }
+    
+    .action-buttons {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    /* Result states for options (applied via JS) */
+    .option-label.correct-answer {
+        border-color: #43a047 !important;
+        background-color: #e8f5e9 !important;
+        color: #2e7d32 !important;
+    }
+    
+    .option-label.wrong-answer {
+        border-color: #e53935 !important;
+        background-color: #ffebee !important;
+        color: #c62828 !important;
+    }
+</style>
+
+<div class="practice-header">
+    <div class="progress-container">
+        <a href="{{ back_url or url_for('select_exam') }}" class="btn-outline" style="padding: 5px 10px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 10px; text-decoration: none;"><i class="fas fa-arrow-left"></i></a>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill"></div>
+        </div>
+        <div class="progress-text">{{ question_index + 1 }} / {{ total_questions }}</div>
+    </div>
+</div>
+
+<div class="question-card">
+    <div class="question-meta">
+        <div class="meta-left">
+            <span class="topic-tag"><i class="fas fa-tag"></i> {{ question.topic }}</span>
+            <span class="difficulty-badge difficulty-{{ (question.difficulty or 'Medium')|lower }}">{{ _(question.difficulty or 'Medium') }}</span>
+        </div>
+        <span>ID: {{ question.id }}</span>
+    </div>
+    
+    <div class="question-text">
+        {{ question.question }}
+    </div>
+    
+    <form id="question-form">
+        <div class="options-list">
+            {% for option in question.options %}
+                {% set opt_val = option.split(')')[0] %}
+                <div class="option-item">
+                    <input type="radio" name="answer" id="opt_{{ loop.index }}" value="{{ opt_val }}">
+                    <label for="opt_{{ loop.index }}" class="option-label">{{ option }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="feedback-section" id="feedback-area">
+            <div id="feedback-message" style="font-weight: bold; margin-bottom: 5px;"></div>
+            <div class="explanation-box">
+                <strong>{{ _('Explanation:') }}</strong>
+                <span id="feedback-explanation"></span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn" id="submit-btn">{{ _('Submit Answer') }}</button>
+            
+            {% if next_url %}
+                <a href="{{ next_url }}" class="btn" id="next-btn" style="display: none;">{{ _('Next Question') }} <i class="fas fa-arrow-right"></i></a>
+            {% else %}
+                <a href="{{ finish_url or url_for('select_exam') }}" class="btn" id="finish-btn" style="display: none;">{{ _('Finish Practice') }} <i class="fas fa-check"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('question-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (!selected) {
+            alert("Please select an answer");
+            return;
+        }
+        
+        const answer = selected.value;
+        const submitBtn = document.getElementById('submit-btn');
+        
+        // Disable inputs
+        const inputs = document.querySelectorAll('input[name="answer"]');
+        inputs.forEach(input => input.disabled = true);
+        submitBtn.style.display = 'none';
+        
+        fetch("{{ url_for('submit_answer') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                exam_type: "{{ exam_type }}",
+                question_id: {{ question.id }},
+                answer: answer
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackMsg = document.getElementById('feedback-message');
+            const feedbackExpl = document.getElementById('feedback-explanation');
+            const nextBtn = document.getElementById('next-btn');
+            const finishBtn = document.getElementById('finish-btn');
+            
+            feedbackArea.style.display = 'block';
+            feedbackExpl.textContent = data.explanation;
+            
+            // Highlight correct/incorrect
+            const correctVal = data.correct_answer;
+            
+            document.querySelectorAll('.option-item').forEach(item => {
+                const input = item.querySelector('input');
+                const label = item.querySelector('label');
+                
+                if (input.value === correctVal) {
+                    label.classList.add('correct-answer');
+                } else if (input.checked && !data.correct) {
+                    label.classList.add('wrong-answer');
+                }
+            });
+            
+            if (data.correct) {
+                feedbackArea.classList.add('feedback-correct');
+                feedbackMsg.textContent = "{{ _('Correct!') }}";
+            } else {
+                feedbackArea.classList.add('feedback-incorrect');
+                feedbackMsg.textContent = "{{ _('Incorrect') }}";
+            }
+            
+            if (nextBtn) nextBtn.style.display = 'inline-block';
+            if (finishBtn) finishBtn.style.display = 'inline-block';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ _('Similar Questions:') }} {{ topic }}</h1>
+    
+    {% if similar_questions %}
+        <p>{{ _('Here are similar questions on the topic of') }} {{ topic }} {{ _('to help you improve:') }}</p>
+        
+        <div class="wrong-questions-list">
+            {% for question in similar_questions %}
+                <div class="wrong-question-item">
+                    <h3>{{ _('Question') }} {{ question.id }}</h3>
+                    <p>{{ question.question }}</p>
+                    <div class="options">
+                        {% for option in question.options %}
+                            <div class="option">
+                                <input type="radio" name="answer_{{ question.id }}" value="{{ option.split(')')[0] }}" disabled>
+                                <label for="option_{{ question.id }}_{{ loop.index0 }}">{{ option }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <p><strong>{{ _('Correct answer:') }}</strong> {{ question.answer }}</p>
+                    <div class="explanation">
+                        <strong>{{ _('Explanation:') }}</strong> {{ question.explanation }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{{ _('No similar questions found for this topic. Please check back later as we update our question bank.') }}</p>
+    {% endif %}
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('wrong_questions') }}" class="btn">{{ _('Back to Wrong Questions') }}</a>
+        <a href="{{ url_for('select_exam') }}" class="btn btn-secondary" style="margin-left: 10px;">{{ _('Back to Practice') }}</a>
+    </div>
+{% endblock %}
