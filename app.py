@@ -14,6 +14,14 @@ app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 babel = Babel(app)
 
+# Flask-Babel 3.x 的新API
+def get_locale():
+    if 'language' in session:
+        return session['language']
+    return 'en'  # 默认语言为英语
+
+babel.init_app(app, locale_selector=get_locale)
+
 # 简单的翻译函数，直接从.po文件中读取翻译
 _translations = {}
 _translation_stamp = None
@@ -110,12 +118,7 @@ LANGUAGES = {
     'zh': '中文'
 }
 
-# 获取用户语言偏好
-@babel.localeselector
-def get_locale():
-    if 'language' in session:
-        return session['language']
-    return 'en'  # 默认语言为英语
+
 
 # 切换语言
 @app.route('/change-language/<lang>')
@@ -1446,6 +1449,6 @@ def similar_questions(topic):
                            current_language=get_locale())
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', '5000'))
+    port = int(os.environ.get('PORT', '5001'))
     debug = os.environ.get('FLASK_DEBUG', '1') == '1'
     app.run(host='0.0.0.0', port=port, debug=debug)
