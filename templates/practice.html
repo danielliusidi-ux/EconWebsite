@@ -209,18 +209,32 @@
         </div>
         
         <div class="action-buttons">
-            <button type="submit" class="btn" id="submit-btn">{{ _('Submit Answer') }}</button>
+            <button type="submit" class="btn" id="submit-btn">
+                {% if request.path.startswith('/practice-quiz') %}
+                    {% if next_url %}
+                        {{ _('Next') }} <i class="fas fa-arrow-right"></i>
+                    {% else %}
+                        {{ _('Finish Quiz') }} <i class="fas fa-check"></i>
+                    {% endif %}
+                {% else %}
+                    {{ _('Submit Answer') }}
+                {% endif %}
+            </button>
             
-            {% if next_url %}
-                <a href="{{ next_url }}" class="btn" id="next-btn" style="display: none;">{{ _('Next Question') }} <i class="fas fa-arrow-right"></i></a>
-            {% else %}
-                <a href="{{ finish_url or url_for('select_exam') }}" class="btn" id="finish-btn" style="display: none;">{{ _('Finish Practice') }} <i class="fas fa-check"></i></a>
+            {% if not request.path.startswith('/practice-quiz') %}
+                {% if next_url %}
+                    <a href="{{ next_url }}" class="btn" id="next-btn" style="display: none;">{{ _('Next Question') }} <i class="fas fa-arrow-right"></i></a>
+                {% else %}
+                    <a href="{{ finish_url or url_for('select_exam') }}" class="btn" id="finish-btn" style="display: none;">{{ _('Finish Practice') }} <i class="fas fa-check"></i></a>
+                {% endif %}
             {% endif %}
         </div>
     </form>
 </div>
 
 <script>
+    const isQuizMode = {{ 'true' if request.path.startswith('/practice-quiz') else 'false' }};
+    
     document.getElementById('question-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -233,58 +247,81 @@
         const answer = selected.value;
         const submitBtn = document.getElementById('submit-btn');
         
-        // Disable inputs
-        const inputs = document.querySelectorAll('input[name="answer"]');
-        inputs.forEach(input => input.disabled = true);
-        submitBtn.style.display = 'none';
-        
-        fetch("{{ url_for('submit_answer') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                exam_type: "{{ exam_type }}",
-                question_id: {{ question.id }},
-                answer: answer
+        if (isQuizMode) {
+            // Quiz模式：保存答案并直接进入下一题
+            fetch("{{ url_for('save_quiz_answer') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question_id: {{ question.id }},
+                    answer: answer
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            const feedbackArea = document.getElementById('feedback-area');
-            const feedbackMsg = document.getElementById('feedback-message');
-            const feedbackExpl = document.getElementById('feedback-explanation');
-            const nextBtn = document.getElementById('next-btn');
-            const finishBtn = document.getElementById('finish-btn');
-            
-            feedbackArea.style.display = 'block';
-            feedbackExpl.textContent = data.explanation;
-            
-            // Highlight correct/incorrect
-            const correctVal = data.correct_answer;
-            
-            document.querySelectorAll('.option-item').forEach(item => {
-                const input = item.querySelector('input');
-                const label = item.querySelector('label');
-                
-                if (input.value === correctVal) {
-                    label.classList.add('correct-answer');
-                } else if (input.checked && !data.correct) {
-                    label.classList.add('wrong-answer');
-                }
+            .then(response => response.json())
+            .then(data => {
+                // 直接跳转到下一题或结果页
+                {% if next_url %}
+                    window.location.href = "{{ next_url }}";
+                {% else %}
+                    window.location.href = "{{ url_for('quiz_result') }}";
+                {% endif %}
             });
+        } else {
+            // 普通模式：显示立即反馈
+            const inputs = document.querySelectorAll('input[name="answer"]');
+            inputs.forEach(input => input.disabled = true);
+            submitBtn.style.display = 'none';
             
-            if (data.correct) {
-                feedbackArea.classList.add('feedback-correct');
-                feedbackMsg.textContent = "{{ _('Correct!') }}";
-            } else {
-                feedbackArea.classList.add('feedback-incorrect');
-                feedbackMsg.textContent = "{{ _('Incorrect') }}";
-            }
-            
-            if (nextBtn) nextBtn.style.display = 'inline-block';
-            if (finishBtn) finishBtn.style.display = 'inline-block';
-        });
+            fetch("{{ url_for('submit_answer') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    exam_type: "{{ exam_type }}",
+                    question_id: {{ question.id }},
+                    answer: answer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const feedbackArea = document.getElementById('feedback-area');
+                const feedbackMsg = document.getElementById('feedback-message');
+                const feedbackExpl = document.getElementById('feedback-explanation');
+                const nextBtn = document.getElementById('next-btn');
+                const finishBtn = document.getElementById('finish-btn');
+                
+                feedbackArea.style.display = 'block';
+                feedbackExpl.textContent = data.explanation;
+                
+                // Highlight correct/incorrect
+                const correctVal = data.correct_answer;
+                
+                document.querySelectorAll('.option-item').forEach(item => {
+                    const input = item.querySelector('input');
+                    const label = item.querySelector('label');
+                    
+                    if (input.value === correctVal) {
+                        label.classList.add('correct-answer');
+                    } else if (input.checked && !data.correct) {
+                        label.classList.add('wrong-answer');
+                    }
+                });
+                
+                if (data.correct) {
+                    feedbackArea.classList.add('feedback-correct');
+                    feedbackMsg.textContent = "{{ _('Correct!') }}";
+                } else {
+                    feedbackArea.classList.add('feedback-incorrect');
+                    feedbackMsg.textContent = "{{ _('Incorrect') }}";
+                }
+                
+                if (nextBtn) nextBtn.style.display = 'inline-block';
+                if (finishBtn) finishBtn.style.display = 'inline-block';
+            });
+        }
     });
 </script>
 {% endblock %}

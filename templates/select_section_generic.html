@@ -47,17 +47,165 @@
     <div class="course-grid">
         {% for section, count in stats.section_counts.items() %}
         <div class="course-card">
+            <div class="count-badge">{{ count }} {{ _('questions') }}</div>
             <a href="{{ url_for('practice', exam_type=exam_type, section=section) }}" class="course-main-link">
                 <div class="course-header">
                     <div class="course-icon"><i class="fas fa-book"></i></div>
                     <div class="course-info">
-                        <h3>{{ section }} ({{ count }})</h3>
+                        <h3>{{ section }}</h3>
                     </div>
                 </div>
             </a>
+            <button class="btn-quiz-generate" onclick="showQuizModal('{{ section }}', {{ count }})">
+                <i class="fas fa-random"></i> {{ _('Generate Quiz') }}
+            </button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
+    
+    <!-- Quiz Generator Modal -->
+    <div id="quiz-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeQuizModal()">&times;</span>
+            <h2>{{ _('Generate Quiz') }}</h2>
+            <p id="modal-section-name"></p>
+            <div class="quiz-form">
+                <label for="quiz-count">{{ _('Number of questions:') }}</label>
+                <input type="number" id="quiz-count" min="1" max="100" value="10">
+                <p class="quiz-hint">{{ _('Max questions:') }} <span id="max-count"></span></p>
+                <button class="btn" onclick="generateQuiz()">{{ _('Start Quiz') }}</button>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .btn-quiz-generate {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #3f51b5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        
+        .btn-quiz-generate:hover {
+            background: #303f9f;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+        
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .quiz-form {
+            margin-top: 20px;
+        }
+        
+        .quiz-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .quiz-form input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        .quiz-form input[type="number"]:focus {
+            outline: none;
+            border-color: #3f51b5;
+        }
+        
+        .quiz-hint {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-form .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+    </style>
+    
+    <script>
+        let currentExamType = '{{ exam_type }}';
+        let currentSection = '';
+        let maxQuestions = 0;
+        
+        function showQuizModal(section, count) {
+            currentSection = section;
+            maxQuestions = count;
+            document.getElementById('modal-section-name').textContent = section;
+            document.getElementById('max-count').textContent = count;
+            document.getElementById('quiz-count').max = count;
+            document.getElementById('quiz-count').value = Math.min(10, count);
+            document.getElementById('quiz-modal').style.display = 'block';
+        }
+        
+        function closeQuizModal() {
+            document.getElementById('quiz-modal').style.display = 'none';
+        }
+        
+        function generateQuiz() {
+            const count = parseInt(document.getElementById('quiz-count').value);
+            if (count < 1 || count > maxQuestions) {
+                alert('Please enter a valid number between 1 and ' + maxQuestions);
+                return;
+            }
+            
+            closeQuizModal();
+            window.location.href = '/generate-quiz/' + currentExamType + '?section=' + encodeURIComponent(currentSection) + '&count=' + count;
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('quiz-modal');
+            if (event.target == modal) {
+                closeQuizModal();
+            }
+        }
+    </script>
 </div>
 {% endblock %}

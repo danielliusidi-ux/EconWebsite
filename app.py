@@ -10025,6 +10025,193 @@ def select_section_ap_macro():
                            exam_title=_('AP Macroeconomics'))
 
 # 刷题页面 (单题模式)
+import random
+import time
+
+# 生成自定义quiz
+@app.route('/generate-quiz/<exam_type>')
+def generate_quiz(exam_type):
+    if exam_type not in QUESTION_BANK:
+        return redirect(url_for('select_exam'))
+    
+    section = request.args.get('section')
+    count = request.args.get('count', type=int, default=10)
+    
+    # 获取符合条件的题目
+    questions_all = QUESTION_BANK[exam_type]
+    questions = questions_all
+    
+    if section:
+        questions = [q for q in questions if q.get('section') == section]
+    
+    # 随机抽取题目
+    if count > len(questions):
+        count = len(questions)
+    
+    # 随机打乱顺序
+    random.shuffle(questions)
+    selected_questions = questions[:count]
+    
+    # 将题目的id存储到session中
+    session['custom_quiz_questions'] = [q['id'] for q in selected_questions]
+    session['custom_quiz_exam_type'] = exam_type
+    session['custom_quiz_section'] = section
+    session['quiz_start_time'] = time.time()
+    
+    return redirect(url_for('practice_custom_quiz', question_index=0))
+
+# 自定义quiz练习
+@app.route('/practice-quiz')
+@app.route('/practice-quiz/<int:question_index>')
+def practice_custom_quiz(question_index=0):
+    custom_quiz_ids = session.get('custom_quiz_questions', [])
+    exam_type = session.get('custom_quiz_exam_type')
+    
+    if not custom_quiz_ids or not exam_type or exam_type not in QUESTION_BANK:
+        return redirect(url_for('select_exam'))
+    
+    # 根据id获取题目
+    questions_all = QUESTION_BANK[exam_type]
+    questions = []
+    for q_id in custom_quiz_ids:
+        q = next((qq for qq in questions_all if qq['id'] == q_id), None)
+        if q:
+            questions.append(q)
+    
+    total_questions = len(questions)
+    
+    if total_questions == 0:
+        return redirect(url_for('select_exam'))
+    
+    if question_index >= total_questions:
+        return redirect(url_for('select_exam'))
+    
+    current_question = questions[question_index]
+    
+    progress = USER_PROGRESS.get(exam_type, {'completed': set(), 'correct': set()})
+    completed_count = len(progress['completed'])
+    accuracy = 0
+    if completed_count > 0:
+        accuracy = int(len(progress['correct']) / completed_count * 100)
+    
+    next_url = None
+    finish_url = url_for('select_exam')
+    
+    if question_index < total_questions - 1:
+        next_url = url_for('practice_custom_quiz', question_index=question_index + 1)
+    
+    # 确定返回页面
+    back_url = url_for('select_exam')
+    if exam_type == 'ap_micro':
+        back_url = url_for('select_section_ap_micro')
+    elif exam_type == 'ap_macro':
+        back_url = url_for('select_section_ap_macro')
+    
+    return render_template('practice.html',
+                           question=current_question,
+                           question_index=question_index,
+                           total_questions=total_questions,
+                           next_url=next_url,
+                           finish_url=finish_url,
+                           back_url=back_url,
+                           exam_type=exam_type,
+                           accuracy=accuracy,
+                           languages=LANGUAGES,
+                           current_language=get_locale())
+
+# 保存quiz答案
+@app.route('/api/save-quiz-answer', methods=['POST'])
+def save_quiz_answer():
+    data = request.json
+    question_id = data.get('question_id')
+    user_answer = data.get('answer')
+    
+    if 'quiz_answers' not in session:
+        session['quiz_answers'] = {}
+    
+    session['quiz_answers'][str(question_id)] = user_answer
+    session.modified = True
+    
+    return jsonify({'success': True})
+
+# quiz结果页面
+@app.route('/quiz-result')
+def quiz_result():
+    custom_quiz_ids = session.get('custom_quiz_questions', [])
+    exam_type = session.get('custom_quiz_exam_type')
+    quiz_answers = session.get('quiz_answers', {})
+    quiz_start_time = session.get('quiz_start_time')
+    section = session.get('custom_quiz_section')
+    
+    if not custom_quiz_ids or not exam_type or exam_type not in QUESTION_BANK:
+        return redirect(url_for('select_exam'))
+    
+    # 根据id获取题目
+    questions_all = QUESTION_BANK[exam_type]
+    questions = []
+    for q_id in custom_quiz_ids:
+        q = next((qq for qq in questions_all if qq['id'] == q_id), None)
+        if q:
+            questions.append(q)
+    
+    # 计算分数并收集所有题目数据
+    correct_count = 0
+    all_questions = []
+    
+    for q in questions:
+        q_id_str = str(q['id'])
+        user_answer = quiz_answers.get(q_id_str)
+        is_correct = (user_answer == q['answer'])
+        
+        if is_correct:
+            correct_count += 1
+        
+        all_questions.append({
+            'question': q,
+            'user_answer': user_answer,
+            'is_correct': is_correct
+        })
+    
+    total_questions = len(questions)
+    incorrect_count = total_questions - correct_count
+    score = int((correct_count / total_questions * 100)) if total_questions > 0 else 0
+    
+    # 计算耗时
+    time_display = ''
+    if quiz_start_time:
+        total_seconds = int(time.time() - quiz_start_time)
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        if minutes > 0:
+            time_display = f'{minutes}:{seconds:02d}'
+        else:
+            time_display = f'0:{seconds:02d}'
+    
+    # 确定返回页面
+    back_url = url_for('select_exam')
+    if exam_type == 'ap_micro':
+        back_url = url_for('select_section_ap_micro')
+    elif exam_type == 'ap_macro':
+        back_url = url_for('select_section_ap_macro')
+    
+    # 清理session
+    session.pop('custom_quiz_questions', None)
+    session.pop('custom_quiz_exam_type', None)
+    session.pop('custom_quiz_section', None)
+    session.pop('quiz_answers', None)
+    session.pop('quiz_start_time', None)
+    
+    return render_template('quiz_result.html',
+                           score=score,
+                           correct_count=correct_count,
+                           incorrect_count=incorrect_count,
+                           all_questions=all_questions,
+                           time_display=time_display,
+                           section=section,
+                           back_url=back_url,
+                           languages=LANGUAGES,
+                           current_language=get_locale())
+
 @app.route('/practice/<exam_type>')
 @app.route('/practice/<exam_type>/<int:question_index>')
 def practice(exam_type, question_index=0):
