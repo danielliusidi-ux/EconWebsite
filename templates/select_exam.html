@@ -280,7 +280,7 @@
     <div class="course-card">
         <i class="fas fa-chevron-right chevron"></i>
         <div class="count-badge">{{ stats.exam_stats.ap_micro.total_questions }} {{ _('questions') }}</div>
-        <a href="{{ url_for('practice', exam_type='ap_micro') }}" class="course-main-link">
+        <a href="{{ url_for('select_section_ap_micro') }}" class="course-main-link">
             <div class="course-header">
                 <div class="course-icon"><i class="fas fa-chart-bar"></i></div>
                 <div class="course-info">
@@ -306,18 +306,12 @@
                 <span class="accuracy-text">{{ _('Accuracy') }} {{ stats.exam_stats.ap_micro.accuracy }}%</span>
             </div>
         </a>
-        <div class="filter-row">
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_micro') }}">{{ _('All') }}</a>
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_micro', difficulty='Easy') }}">{{ _('Easy') }}</a>
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_micro', difficulty='Medium') }}">{{ _('Medium') }}</a>
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_micro', difficulty='Hard') }}">{{ _('Hard') }}</a>
-        </div>
     </div>
     
     <div class="course-card">
         <i class="fas fa-chevron-right chevron"></i>
         <div class="count-badge">{{ stats.exam_stats.ap_macro.total_questions }} {{ _('questions') }}</div>
-        <a href="{{ url_for('practice', exam_type='ap_macro') }}" class="course-main-link">
+        <a href="{{ url_for('select_section_ap_macro') }}" class="course-main-link">
             <div class="course-header">
                 <div class="course-icon"><i class="fas fa-globe"></i></div>
                 <div class="course-info">
@@ -343,12 +337,6 @@
                 <span class="accuracy-text">{{ _('Accuracy') }} {{ stats.exam_stats.ap_macro.accuracy }}%</span>
             </div>
         </a>
-        <div class="filter-row">
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_macro') }}">{{ _('All') }}</a>
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_macro', difficulty='Easy') }}">{{ _('Easy') }}</a>
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_macro', difficulty='Medium') }}">{{ _('Medium') }}</a>
-            <a class="filter-chip" href="{{ url_for('practice', exam_type='ap_macro', difficulty='Hard') }}">{{ _('Hard') }}</a>
-        </div>
     </div>
 </div>
 
