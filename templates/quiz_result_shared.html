@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'shared_base.html' %}
 
-{% block title %}{% if section %}{{ section }} Quiz Result{% else %}{{ _('Quiz Results') }}{% endif %}{% endblock %}
+{% block title %}{% if section %}{{ section }} Quiz Result{% else %}Quiz Results{% endif %}{% endblock %}
 
 {% block content %}
 <style>
@@ -150,37 +150,8 @@
         justify-content: center;
     }
     
-    .pdf-container {
-        background: white;
-        padding: 20px;
-    }
-    
     @media print {
-        body {
-            background: white !important;
-        }
-        
         .action-buttons {
-            display: none !important;
-        }
-        
-        .container {
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 20px !important;
-            margin: 0 !important;
-        }
-        
-        .result-header {
-            page-break-after: avoid;
-        }
-        
-        .review-card {
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-        
-        header, footer, nav {
             display: none !important;
         }
     }
@@ -194,37 +165,37 @@
             <i class="fas fa-folder"></i> {{ section }}
         </div>
         {% endif %}
-        <div class="score-label">{{ _('Your Score') }}</div>
+        <div class="score-label">Your Score</div>
         <div class="score-display">{{ score }}%</div>
         <div class="score-details">
             <div class="score-detail">
                 <div class="score-detail-number correct-number">{{ correct_count }}</div>
-                <div class="score-detail-label">{{ _('Correct') }}</div>
+                <div class="score-detail-label">Correct</div>
             </div>
             <div class="score-detail">
                 <div class="score-detail-number incorrect-number">{{ incorrect_count }}</div>
-                <div class="score-detail-label">{{ _('Incorrect') }}</div>
+                <div class="score-detail-label">Incorrect</div>
             </div>
             {% if time_display %}
             <div class="score-detail">
                 <div class="score-detail-number" style="color: #3f51b5;">{{ time_display }}</div>
-                <div class="score-detail-label">{{ _('Time Spent') }}</div>
+                <div class="score-detail-label">Time Spent</div>
             </div>
             {% endif %}
         </div>
     </div>
     
     <div class="questions-review">
-        <div class="review-title">{{ _('Review All Questions') }}</div>
+        <div class="review-title">Review All Questions</div>
         
         {% for item in all_questions %}
         <div class="review-card">
             <div class="review-header">
-                <span style="font-weight: 500;">{{ _('Question') }} {{ loop.index }}</span>
+                <span style="font-weight: 500;">Question {{ loop.index }}</span>
                 {% if item.is_correct %}
-                    <span class="review-badge badge-correct">{{ _('Correct') }}</span>
+                    <span class="review-badge badge-correct">Correct</span>
                 {% else %}
-                    <span class="review-badge badge-incorrect">{{ _('Incorrect') }}</span>
+                    <span class="review-badge badge-incorrect">Incorrect</span>
                 {% endif %}
             </div>
             
@@ -239,10 +210,10 @@
                         {% if opt_val == item.user_answer and opt_val != item.question.answer %}option-incorrect{% endif %}">
                         {{ option }}
                         {% if opt_val == item.question.answer %}
-                            <span style="float: right; font-weight: 700;">{{ _('Correct Answer') }}</span>
+                            <span style="float: right; font-weight: 700;">Correct Answer</span>
                         {% endif %}
                         {% if opt_val == item.user_answer %}
-                            <span style="float: right; font-weight: 700; margin-right: 10px;">{{ _('Your Answer') }}</span>
+                            <span style="float: right; font-weight: 700; margin-right: 10px;">Your Answer</span>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -250,25 +221,19 @@
             
             {% if item.question.explanation %}
             <div class="review-explanation">
-                <strong>{{ _('Explanation:') }}</strong><br>
+                <strong>Explanation:</strong><br>
                 {{ item.question.explanation }}
             </div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
-</div>
-
-<div class="action-buttons" style="margin-top: 20px;">
-    <button onclick="exportToPDF()" class="btn" style="background: #4caf50;">
-        <i class="fas fa-file-pdf"></i> {{ _('Export to PDF') }}
-    </button>
-    <a href="{{ back_url }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> {{ _('Back to Sections') }}
-    </a>
-    <a href="{{ url_for('select_exam') }}" class="btn">
-        <i class="fas fa-home"></i> {{ _('Home') }}
-    </a>
+    
+    <div class="action-buttons">
+        <button onclick="exportToPDF()" class="btn" style="background: #4caf50;">
+            <i class="fas fa-file-pdf"></i> Export to PDF
+        </button>
+    </div>
 </div>
 
 <div id="mobile-hint" style="display: none; text-align: center; margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
@@ -276,6 +241,7 @@
     <strong>移动设备提示：</strong>点击分享按钮 → 选择"打印" → 选择"保存为PDF"
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);

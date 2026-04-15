@@ -76,11 +76,39 @@
             text-decoration: none;
             font-weight: 500;
             font-size: 15px;
-            transition: color 0.3s;
+            transition: all 0.3s;
+            padding: 8px 16px;
+            border-radius: 8px;
         }
         
         .nav-link:hover {
             color: #1a237e;
+            background-color: #f1f2f6;
+        }
+        
+        /* Wrong Book 特殊样式 */
+        .nav-link[href*="wrong-questions"] {
+            background: #f8f9fa;
+            color: #57606f;
+            border: 1px solid #e9ecef;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .nav-link[href*="wrong-questions"]:hover {
+            background: #e9ecef;
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .nav-link[href*="wrong-questions"]::before {
+            content: "\f5c3";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 400;
+            font-size: 14px;
+            color: #6c757d;
         }
         
         .language-selector {

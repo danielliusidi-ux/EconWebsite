@@ -84,8 +84,20 @@
     .question-text {
         font-size: 18px;
         color: #2c3e50;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         font-weight: 500;
+    }
+    
+    .question-image-container {
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .question-image {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     .options-list {
@@ -174,6 +186,23 @@
         </div>
         <div class="progress-text">{{ question_index + 1 }} / {{ total_questions }}</div>
     </div>
+    
+    {% if quiz_id and request.path.startswith('/practice-quiz') %}
+    <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-share-alt" style="color: #1976d2; font-size: 18px;"></i>
+        <div style="flex-grow: 1;">
+            <div style="font-size: 14px; color: #424242; margin-bottom: 5px;">分享这个 Quiz</div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="share-link" readonly 
+                       value="{{ request.host_url }}shared-quiz/{{ quiz_id }}" 
+                       style="flex-grow: 1; padding: 8px 12px; border: 1px solid #bbdefb; border-radius: 6px; font-size: 13px; background: white;">
+                <button onclick="copyShareLink()" class="btn" style="padding: 8px 16px; font-size: 14px; white-space: nowrap;">
+                    <i class="fas fa-copy"></i> 复制链接
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <div class="question-card">
@@ -189,10 +218,16 @@
         {{ question.question }}
     </div>
     
+    {% if question.image %}
+    <div class="question-image-container">
+        <img src="{{ url_for('static', filename=question.image) }}" alt="Question Diagram" class="question-image">
+    </div>
+    {% endif %}
+    
     <form id="question-form">
         <div class="options-list">
             {% for option in question.options %}
-                {% set opt_val = option.split(')')[0] %}
+                {% set opt_val = option[1] if option.startswith('(') else option.split(')')[0] %}
                 <div class="option-item">
                     <input type="radio" name="answer" id="opt_{{ loop.index }}" value="{{ opt_val }}">
                     <label for="opt_{{ loop.index }}" class="option-label">{{ option }}</label>
@@ -233,6 +268,23 @@
 </div>
 
 <script>
+    function copyShareLink() {
+        const linkInput = document.getElementById('share-link');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+        btn.style.background = '#43a047';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+        }, 2000);
+    }
+    
     const isQuizMode = {{ 'true' if request.path.startswith('/practice-quiz') else 'false' }};
     
     document.getElementById('question-form').addEventListener('submit', function(e) {

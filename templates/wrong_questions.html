@@ -2,86 +2,566 @@
 
 {% block content %}
     <style>
+        /* 头部样式 */
         .wrong-book-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8eaf6;
         }
 
         .wrong-book-header h1 {
             margin: 0;
+            font-size: 28px;
+            color: #1a237e;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .wrong-book-header h1 i {
+            color: #e53935;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 24px;
+        }
+
+        .wrong-book-stats {
+            margin-left: auto;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e53935;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+
+        /* 空状态样式 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .empty-state p {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* 错题列表样式 */
+        .wrong-questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .wrong-question-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #e53935;
+        }
+
+        .wrong-question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .wrong-question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .wrong-question-meta {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 6px;
+        }
+
+        .topic-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
         .difficulty-badge {
             display: inline-flex;
             align-items: center;
-            padding: 3px 10px;
-            border-radius: 999px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .difficulty-easy {
-            background: #e8f5e9;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             color: #2e7d32;
         }
 
         .difficulty-medium {
-            background: #fff8e1;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
             color: #ef6c00;
         }
 
         .difficulty-hard {
-            background: #ffebee;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
             color: #c62828;
+        }
+
+        .question-number {
+            font-size: 14px;
+            color: #a4b0be;
+            font-weight: 600;
+        }
+
+        .wrong-question-content {
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 17px;
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .option-item.correct {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-color: #4caf50;
+        }
+
+        .option-letter {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 13px;
+            color: #57606f;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .option-item.correct .option-letter {
+            background: #4caf50;
+            color: white;
+        }
+
+        .option-text {
+            flex: 1;
+            color: #57606f;
+            font-size: 14px;
+        }
+
+        .option-item.correct .option-text {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .correct-indicator {
+            color: #4caf50;
+            font-size: 18px;
+        }
+
+        .explanation-box {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .explanation-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #7b1fa2;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .explanation-text {
+            color: #4a148c;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-practice {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(63, 81, 181, 0.3);
+        }
+
+        .btn-practice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(63, 81, 181, 0.4);
+        }
+
+        .btn-remove {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: white;
+            color: #e53935;
+            border: 1px solid #ffcdd2;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-remove:hover {
+            background: #ffebee;
+            border-color: #e53935;
+        }
+
+        /* 底部操作栏 */
+        .action-bar {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e8eaf6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: white;
+            color: #57606f;
+            border: 1px solid #dfe4ea;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: #f1f2f6;
+            color: #2f3542;
+        }
+
+        .btn-clear-all {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #e53935 0%, #ef5350 100%);
+            color: white;
+            border: none;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+        }
+
+        .btn-clear-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .wrong-book-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .wrong-book-stats {
+                margin-left: 0;
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .wrong-question-header {
+                flex-direction: column;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+
+            .btn-practice, .btn-remove {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .btn-back, .btn-clear-all {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 
     <div class="wrong-book-header">
-        <a href="{{ url_for('select_exam') }}" class="btn-outline" style="padding: 5px 10px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; text-decoration: none;"><i class="fas fa-arrow-left"></i></a>
-        <h1>{{ _('Your Wrong Questions') }}</h1>
+        <h1>
+            <i class="fas fa-book-open"></i>
+            {{ _('Wrong Book') }}
+        </h1>
+        {% if wrong_questions %}
+        <div class="wrong-book-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ wrong_questions|length }}</div>
+                <div class="stat-label">{{ _('Questions') }}</div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     
     {% if wrong_questions %}
-        <p>{{ _('Here are the questions you\'ve answered incorrectly. Practice similar questions to improve:') }}</p>
-        
         <div class="wrong-questions-list">
             {% for question in wrong_questions %}
-                <div class="wrong-question-item">
-                    <div class="wrong-question-meta">
-                        <span class="topic-tag">{{ question.topic }}</span>
-                        {% if question.difficulty is defined and question.difficulty %}
-                            <span class="difficulty-badge difficulty-{{ question.difficulty|lower }}">{{ _(question.difficulty) }}</span>
+                <div class="wrong-question-card" data-question-id="{{ question.id }}" data-exam-type="{{ question.exam_type }}">
+                    <div class="wrong-question-header">
+                        <div class="wrong-question-meta">
+                            <span class="topic-tag">
+                                <i class="fas fa-tag"></i>
+                                {{ question.topic }}
+                            </span>
+                            {% if question.difficulty is defined and question.difficulty %}
+                                <span class="difficulty-badge difficulty-{{ question.difficulty|lower }}">
+                                    {{ _(question.difficulty) }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <span class="question-number">ID: {{ question.id }}</span>
+                    </div>
+                    
+                    <div class="wrong-question-content">
+                        <div class="question-text">{{ question.question }}</div>
+                        
+                        {% if question.options %}
+                        <div class="options-list">
+                            {% for option in question.options %}
+                                {% set opt_val = option[1] if option.startswith('(') else option.split(')')[0] %}
+                                <div class="option-item {% if opt_val == question.answer %}correct{% endif %}">
+                                    <span class="option-letter">{{ opt_val }}</span>
+                                    <span class="option-text">{{ option }}</span>
+                                    {% if opt_val == question.answer %}
+                                        <i class="fas fa-check-circle correct-indicator"></i>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
                         {% endif %}
+                        
+                        <div class="explanation-box">
+                            <div class="explanation-header">
+                                <i class="fas fa-lightbulb"></i>
+                                {{ _('Explanation') }}
+                            </div>
+                            <div class="explanation-text">{{ question.explanation }}</div>
+                        </div>
                     </div>
-                    <h3>{{ _('Question') }} {{ question.id }}</h3>
-                    <p>{{ question.question }}</p>
-                    <p><strong>{{ _('Correct answer:') }}</strong> {{ question.answer }}</p>
-                    <div class="explanation">
-                        <strong>{{ _('Explanation:') }}</strong> {{ question.explanation }}
+                    
+                    <div class="card-actions">
+                        {% if question.exam_type is defined and question.exam_type %}
+                            <a href="{{ url_for('practice_similar', exam_type=question.exam_type, topic=question.topic, exclude_id=question.id) }}" class="btn-practice">
+                                <i class="fas fa-dumbbell"></i>
+                                {{ _('Practice Similar') }}
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('similar_questions', topic=question.topic, exclude_id=question.id) }}" class="btn-practice">
+                                <i class="fas fa-dumbbell"></i>
+                                {{ _('Practice Similar') }}
+                            </a>
+                        {% endif %}
+                        <button class="btn-remove" onclick="removeWrongQuestion({{ question.id }}, '{{ question.exam_type }}')">
+                            <i class="fas fa-trash-alt"></i>
+                            {{ _('Remove') }}
+                        </button>
                     </div>
-                    {% if question.exam_type is defined and question.exam_type %}
-                        <a href="{{ url_for('practice_similar', exam_type=question.exam_type, topic=question.topic, exclude_id=question.id) }}" class="btn btn-secondary" style="margin-top: 10px;">{{ _('Practice Similar Questions') }}</a>
-                    {% else %}
-                        <a href="{{ url_for('similar_questions', topic=question.topic, exclude_id=question.id) }}" class="btn btn-secondary" style="margin-top: 10px;">{{ _('Practice Similar Questions') }}</a>
-                    {% endif %}
                 </div>
             {% endfor %}
         </div>
+        
+        <div class="action-bar">
+            <a href="{{ url_for('select_exam') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                {{ _('Back to Practice') }}
+            </a>
+            <button class="btn-clear-all" onclick="clearAllWrongQuestions()">
+                <i class="fas fa-trash"></i>
+                {{ _('Clear All') }}
+            </button>
+        </div>
     {% else %}
-        <p>{{ _("Great! You haven't answered any questions incorrectly yet. Keep up the good work!") }}</p>
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>{{ _('Great Job!') }}</h2>
+            <p>{{ _('You haven\'t answered any questions incorrectly yet. Keep up the good work!') }}</p>
+            <a href="{{ url_for('select_exam') }}" class="btn-practice" style="margin-top: 10px;">
+                <i class="fas fa-play"></i>
+                {{ _('Start Practicing') }}
+            </a>
+        </div>
     {% endif %}
-    
-    <div style="margin-top: 30px;">
-        <a href="{{ url_for('select_exam') }}" class="btn">{{ _('Back to Practice') }}</a>
-    </div>
+
+    <script>
+        function removeWrongQuestion(questionId, examType) {
+            if (!confirm('{{ _('Are you sure you want to remove this question from your wrong book?') }}')) {
+                return;
+            }
+            
+            fetch('/api/remove-wrong-question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question_id: questionId,
+                    exam_type: examType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.querySelector(`[data-question-id="${questionId}"]`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            card.remove();
+                            // 如果没有题目了，刷新页面显示空状态
+                            if (document.querySelectorAll('.wrong-question-card').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ _('Failed to remove question. Please try again.') }}');
+            });
+        }
+
+        function clearAllWrongQuestions() {
+            if (!confirm('{{ _('Are you sure you want to clear all questions from your wrong book? This action cannot be undone.') }}')) {
+                return;
+            }
+            
+            fetch('/api/clear-wrong-questions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('{{ _('Failed to clear wrong book. Please try again.') }}');
+            });
+        }
+    </script>
 {% endblock %}

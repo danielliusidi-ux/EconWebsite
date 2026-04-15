@@ -17,13 +17,12 @@
     
     <div class="course-grid">
         <div class="course-card">
-            <i class="fas fa-chevron-right chevron"></i>
-            <div class="count-badge">{{ stats.total_questions }} {{ _('questions') }}</div>
             <a href="{{ url_for('practice', exam_type=exam_type) }}" class="course-main-link">
                 <div class="course-header">
                     <div class="course-icon"><i class="fas fa-layer-group"></i></div>
                     <div class="course-info">
                         <h3>{{ _('All Questions') }}</h3>
+                        <div class="count-badge">{{ stats.total_questions }} {{ _('questions') }}</div>
                     </div>
                 </div>
             </a>
@@ -47,12 +46,12 @@
     <div class="course-grid">
         {% for section, count in stats.section_counts.items() %}
         <div class="course-card">
-            <div class="count-badge">{{ count }} {{ _('questions') }}</div>
             <a href="{{ url_for('practice', exam_type=exam_type, section=section) }}" class="course-main-link">
                 <div class="course-header">
                     <div class="course-icon"><i class="fas fa-book"></i></div>
                     <div class="course-info">
                         <h3>{{ section }}</h3>
+                        <div class="count-badge">{{ count }} {{ _('questions') }}</div>
                     </div>
                 </div>
             </a>
@@ -80,21 +79,193 @@
     </div>
     
     <style>
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 40px 0 24px;
+            display: flex;
+            align-items: center;
+            letter-spacing: -0.3px;
+        }
+        
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 5px;
+            height: 32px;
+            background: linear-gradient(135deg, #3f51b5 0%, #7986cb 100%);
+            margin-right: 16px;
+            border-radius: 3px;
+        }
+        
+        .section-subtitle {
+            font-size: 15px;
+            font-weight: 500;
+            color: #78909c;
+            margin-left: 12px;
+            opacity: 0.9;
+        }
+        
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        
+        .course-card {
+            display: flex !important;
+            flex-direction: column;
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+        }
+        
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3f51b5 0%, #7c4dff 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(63, 81, 181, 0.12);
+        }
+        
+        .course-card:hover::before {
+            opacity: 1;
+        }
+        
+        .count-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+            color: #303f9f;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            margin-top: 8px;
+        }
+        
+        .course-main-link {
+            display: block !important;
+            text-decoration: none;
+            flex-grow: 0 !important;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+        
+        .course-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 0;
+        }
+        
+        .course-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eaf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #3f51b5;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            margin-top: 2px;
+        }
+        
+        .course-card:hover .course-icon {
+            background: linear-gradient(135deg, #3f51b5 0%, #7c4dff 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .course-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a237e;
+            margin-bottom: 0;
+            line-height: 1.4;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+        
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 24px;
+            background: #f5f7fa;
+            color: #546e7a;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            border: 2px solid transparent;
+        }
+        
+        .filter-chip:hover {
+            background: #e8eaf6;
+            color: #3f51b5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(63, 81, 181, 0.15);
+        }
+        
+        .filter-chip:active {
+            transform: translateY(0);
+        }
+        
         .btn-quiz-generate {
-            margin-top: 10px;
-            padding: 8px 16px;
-            background: #3f51b5;
+            margin-top: auto;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
             width: 100%;
+            position: relative;
+            z-index: 10;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 14px rgba(63, 81, 181, 0.25);
         }
         
         .btn-quiz-generate:hover {
-            background: #303f9f;
+            background: linear-gradient(135deg, #303f9f 0%, #3f51b5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(63, 81, 181, 0.35);
+        }
+        
+        .btn-quiz-generate:active {
+            transform: translateY(0);
         }
         
         .modal {

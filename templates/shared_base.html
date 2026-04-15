@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quiz{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f0f4f8;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            background-color: #3f51b5;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            background-color: #303f9f;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: #57606f;
+            border: 1px solid #dfe4ea;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f1f2f6;
+            color: #2f3542;
+        }
+        
+        main {
+            padding-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+</body>
+</html>

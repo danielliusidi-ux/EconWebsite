@@ -18,8 +18,9 @@
             
             <div class="options">
                 {% for option in question.options %}
+                    {% set opt_val = option[1] if option.startswith('(') else option.split(')')[0] %}
                     <div class="option">
-                        <input type="radio" name="answer_{{ question.id }}" value="{{ option.split(')')[0] }}" disabled {% if user_answers.get(question.id) == option.split(')')[0] %}checked{% endif %}>
+                        <input type="radio" name="answer_{{ question.id }}" value="{{ opt_val }}" disabled {% if user_answers.get(question.id) == opt_val %}checked{% endif %}>
                         <label for="option_{{ question.id }}_{{ loop.index0 }}">{{ option }}</label>
                     </div>
                 {% endfor %}
