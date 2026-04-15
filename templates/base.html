@@ -232,6 +232,7 @@
                     EconPrep
                     <span>Exam Preparation Platform</span>
                 </a>
+                {% if request.endpoint != 'index' %}
                 <div class="nav-links">
                     <a href="{{ url_for('wrong_questions') }}" class="nav-link">{{ _('Wrong Book') }}</a>
                     <div class="language-selector">
@@ -247,6 +248,7 @@
                         {% endfor %}
                     </div>
                 </div>
+                {% endif %}
             </nav>
         </div>
     </header>
