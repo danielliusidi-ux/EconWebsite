@@ -340,23 +340,69 @@ def generate_quiz(exam_type):
     if exam_type not in QUESTION_BANK:
         return redirect(url_for('select_exam'))
     
+    sections_param = request.args.get('sections')
     section = request.args.get('section')
     count = request.args.get('count', type=int, default=10)
     
     # 获取符合条件的题目
     questions_all = QUESTION_BANK[exam_type]
-    questions = questions_all
+    selected_questions = []
     
-    if section:
-        questions = [q for q in questions if q.get('section') == section]
-    
-    # 随机抽取题目
-    if count > len(questions):
-        count = len(questions)
-    
-    # 随机打乱顺序
-    random.shuffle(questions)
-    selected_questions = questions[:count]
+    if sections_param:
+        try:
+            selected_sections = json.loads(sections_param)
+            # 按章节分组
+            section_questions = {}
+            for s in selected_sections:
+                section_questions[s] = [q for q in questions_all if q.get('section') == s]
+            
+            # 计算每个章节应该选多少题
+            num_sections = len(selected_sections)
+            questions_per_section = count // num_sections
+            remaining_questions = count % num_sections
+            
+            # 从每个章节均匀随机挑选题目
+            for i, s in enumerate(selected_sections):
+                q_list = section_questions[s]
+                # 第一个 remaining_questions 个章节多拿1题
+                num_to_take = questions_per_section + (1 if i < remaining_questions else 0)
+                # 确保不超过该章节的题目数量
+                num_to_take = min(num_to_take, len(q_list))
+                # 随机打乱并选择
+                random.shuffle(q_list)
+                selected_questions.extend(q_list[:num_to_take])
+            
+            # 最后打乱所有选中的题目顺序
+            random.shuffle(selected_questions)
+            
+            # 如果题数不够，用第一个章节的题补足
+            if len(selected_questions) < count and selected_sections:
+                first_section = selected_sections[0]
+                first_section_questions = [q for q in questions_all if q.get('section') == first_section]
+                random.shuffle(first_section_questions)
+                for q in first_section_questions:
+                    if len(selected_questions) >= count:
+                        break
+                    if q not in selected_questions:
+                        selected_questions.append(q)
+            
+            # 确保题数不超过要求
+            selected_questions = selected_questions[:count]
+            
+        except (json.JSONDecodeError, Exception):
+            # 如果解析失败，回退到单个章节或所有题目的模式
+            questions = questions_all
+            if section:
+                questions = [q for q in questions if q.get('section') == section]
+            random.shuffle(questions)
+            selected_questions = questions[:count]
+    else:
+        # 单个章节或所有题目的模式
+        questions = questions_all
+        if section:
+            questions = [q for q in questions if q.get('section') == section]
+        random.shuffle(questions)
+        selected_questions = questions[:count]
     
     # 生成共享quiz
     quiz_id = str(uuid.uuid4())
@@ -477,6 +523,10 @@ def quiz_result():
     correct_count = 0
     all_questions = []
     
+    # 确保session中有wrong_questions
+    if 'wrong_questions' not in session:
+        session['wrong_questions'] = []
+    
     for q in questions:
         q_id_str = str(q['id'])
         user_answer = quiz_answers.get(q_id_str)
@@ -484,6 +534,14 @@ def quiz_result():
         
         if is_correct:
             correct_count += 1
+        else:
+            # 添加错题到错题本
+            wrong_item = dict(q)
+            wrong_item['exam_type'] = exam_type
+            # 避免重复添加
+            if not any(w.get('id') == q['id'] and w.get('exam_type') == exam_type for w in session['wrong_questions']):
+                session['wrong_questions'].append(wrong_item)
+                session.modified = True
         
         all_questions.append({
             'question': q,
@@ -632,6 +690,10 @@ def shared_quiz_result():
     correct_count = 0
     all_questions = []
     
+    # 确保session中有wrong_questions
+    if 'wrong_questions' not in session:
+        session['wrong_questions'] = []
+    
     for q in questions:
         q_id_str = str(q['id'])
         user_answer = quiz_answers.get(q_id_str)
@@ -639,6 +701,14 @@ def shared_quiz_result():
         
         if is_correct:
             correct_count += 1
+        else:
+            # 添加错题到错题本
+            wrong_item = dict(q)
+            wrong_item['exam_type'] = exam_type
+            # 避免重复添加
+            if not any(w.get('id') == q['id'] and w.get('exam_type') == exam_type for w in session['wrong_questions']):
+                session['wrong_questions'].append(wrong_item)
+                session.modified = True
         
         all_questions.append({
             'question': q,

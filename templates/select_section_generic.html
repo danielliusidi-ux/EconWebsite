@@ -15,6 +15,14 @@
         <span class="section-subtitle">{{ _('Select a Section to Practice') }}</span>
     </div>
     
+    {% if stats.section_counts %}
+    <div class="generate-quiz-top">
+        <button class="btn-quiz-generate-top" onclick="showQuizModal()">
+            <i class="fas fa-random"></i> {{ _('Generate Quiz') }}
+        </button>
+    </div>
+    {% endif %}
+    
     <div class="course-grid">
         <div class="course-card">
             <a href="{{ url_for('practice', exam_type=exam_type) }}" class="course-main-link">
@@ -55,9 +63,6 @@
                     </div>
                 </div>
             </a>
-            <button class="btn-quiz-generate" onclick="showQuizModal('{{ section }}', {{ count }})">
-                <i class="fas fa-random"></i> {{ _('Generate Quiz') }}
-            </button>
         </div>
         {% endfor %}
     </div>
@@ -65,14 +70,25 @@
     
     <!-- Quiz Generator Modal -->
     <div id="quiz-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <span class="close" onclick="closeQuizModal()">&times;</span>
             <h2>{{ _('Generate Quiz') }}</h2>
-            <p id="modal-section-name"></p>
             <div class="quiz-form">
+                <label>{{ _('Select Chapters:') }}</label>
+                <div class="chapter-selection">
+                    {% for section, count in stats.section_counts.items() %}
+                    <div class="chapter-option">
+                        <input type="checkbox" id="section-{{ loop.index }}" class="chapter-checkbox" value="{{ section }}" data-count="{{ count }}">
+                        <label for="section-{{ loop.index }}" class="chapter-label">
+                            <span class="chapter-name">{{ section }}</span>
+                            <span class="chapter-count">({{ count }})</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
                 <label for="quiz-count">{{ _('Number of questions:') }}</label>
-                <input type="number" id="quiz-count" min="1" max="100" value="10">
-                <p class="quiz-hint">{{ _('Max questions:') }} <span id="max-count"></span></p>
+                <input type="number" id="quiz-count" min="1" max="500" value="10">
+                <p class="quiz-hint">{{ _('Max questions:') }} <span id="max-count">0</span></p>
                 <button class="btn" onclick="generateQuiz()">{{ _('Start Quiz') }}</button>
             </div>
         </div>
@@ -105,6 +121,30 @@
             color: #78909c;
             margin-left: 12px;
             opacity: 0.9;
+        }
+        
+        .generate-quiz-top {
+            margin-bottom: 30px;
+        }
+        
+        .btn-quiz-generate-top {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 14px rgba(63, 81, 181, 0.25);
+        }
+        
+        .btn-quiz-generate-top:hover {
+            background: linear-gradient(135deg, #303f9f 0%, #3f51b5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(63, 81, 181, 0.35);
         }
         
         .course-grid {
@@ -163,7 +203,6 @@
             display: block !important;
             text-decoration: none;
             flex-grow: 0 !important;
-            margin-bottom: 16px;
             cursor: pointer;
         }
         
@@ -240,34 +279,6 @@
             transform: translateY(0);
         }
         
-        .btn-quiz-generate {
-            margin-top: auto;
-            padding: 14px 24px;
-            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            width: 100%;
-            position: relative;
-            z-index: 10;
-            letter-spacing: 0.3px;
-            box-shadow: 0 4px 14px rgba(63, 81, 181, 0.25);
-        }
-        
-        .btn-quiz-generate:hover {
-            background: linear-gradient(135deg, #303f9f 0%, #3f51b5 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(63, 81, 181, 0.35);
-        }
-        
-        .btn-quiz-generate:active {
-            transform: translateY(0);
-        }
-        
         .modal {
             display: none;
             position: fixed;
@@ -281,12 +292,18 @@
         
         .modal-content {
             background-color: white;
-            margin: 15% auto;
+            margin: 5% auto;
             padding: 30px;
             border-radius: 12px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-large {
+            max-width: 600px;
         }
         
         .close {
@@ -311,6 +328,57 @@
             display: block;
             margin-bottom: 10px;
             font-weight: 500;
+            margin-top: 15px;
+        }
+        
+        .chapter-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .chapter-option {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f5f7fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .chapter-option:hover {
+            background: #e8eaf6;
+        }
+        
+        .chapter-option:has(.chapter-checkbox:checked) {
+            background: #e8eaf6;
+            border-color: #3f51b5;
+        }
+        
+        .chapter-checkbox {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .chapter-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+        }
+        
+        .chapter-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .chapter-count {
+            font-size: 12px;
+            color: #7f8c8d;
         }
         
         .quiz-form input[type="number"] {
@@ -338,21 +406,53 @@
             width: 100%;
             padding: 12px;
             font-size: 16px;
+            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-form .btn:hover {
+            background: linear-gradient(135deg, #303f9f 0%, #3f51b5 100%);
+            transform: translateY(-2px);
         }
     </style>
     
     <script>
         let currentExamType = '{{ exam_type }}';
-        let currentSection = '';
-        let maxQuestions = 0;
+        let sectionData = {{ stats.section_counts | tojson }};
         
-        function showQuizModal(section, count) {
-            currentSection = section;
-            maxQuestions = count;
-            document.getElementById('modal-section-name').textContent = section;
-            document.getElementById('max-count').textContent = count;
-            document.getElementById('quiz-count').max = count;
-            document.getElementById('quiz-count').value = Math.min(10, count);
+        function updateMaxQuestions() {
+            const checkboxes = document.querySelectorAll('.chapter-checkbox:checked');
+            let total = 0;
+            checkboxes.forEach(checkbox => {
+                total += parseInt(checkbox.dataset.count);
+            });
+            document.getElementById('max-count').textContent = total;
+            document.getElementById('quiz-count').max = total;
+            const currentCount = parseInt(document.getElementById('quiz-count').value);
+            if (currentCount > total) {
+                document.getElementById('quiz-count').value = Math.min(10, total);
+            }
+        }
+        
+        function showQuizModal() {
+            // Initialize checkboxes event listeners
+            const checkboxes = document.querySelectorAll('.chapter-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateMaxQuestions);
+            });
+            
+            // Check all by default
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            
+            updateMaxQuestions();
+            document.getElementById('quiz-count').value = 10;
             document.getElementById('quiz-modal').style.display = 'block';
         }
         
@@ -361,14 +461,24 @@
         }
         
         function generateQuiz() {
-            const count = parseInt(document.getElementById('quiz-count').value);
-            if (count < 1 || count > maxQuestions) {
-                alert('Please enter a valid number between 1 and ' + maxQuestions);
+            const checkboxes = document.querySelectorAll('.chapter-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one chapter');
                 return;
             }
             
+            const count = parseInt(document.getElementById('quiz-count').value);
+            const maxCount = parseInt(document.getElementById('max-count').textContent);
+            
+            if (count < 1 || count > maxCount) {
+                alert('Please enter a valid number between 1 and ' + maxCount);
+                return;
+            }
+            
+            const sections = Array.from(checkboxes).map(cb => cb.value);
+            
             closeQuizModal();
-            window.location.href = '/generate-quiz/' + currentExamType + '?section=' + encodeURIComponent(currentSection) + '&count=' + count;
+            window.location.href = '/generate-quiz/' + currentExamType + '?sections=' + encodeURIComponent(JSON.stringify(sections)) + '&count=' + count;
         }
         
         window.onclick = function(event) {
