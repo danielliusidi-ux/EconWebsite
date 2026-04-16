@@ -201,6 +201,13 @@
             
             <div class="review-question">{{ item.question.question }}</div>
             
+            {% set image_path = 'images/micro/micro_q' ~ item.question.id ~ '.png' %}
+            {% if image_path %}
+            <div class="question-image-container">
+                <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" onerror="this.style.display='none'; this.parentElement.style.display='none';">
+            </div>
+            {% endif %}
+            
             <div class="review-options">
                 {% for option in item.question.options %}
                     {% set opt_val = option[1] if option.startswith('(') else option.split(')')[0] %}

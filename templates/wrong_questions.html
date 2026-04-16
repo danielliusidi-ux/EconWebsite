@@ -433,6 +433,15 @@
                     <div class="wrong-question-content">
                         <div class="question-text">{{ question.question }}</div>
                         
+                        {% if question.exam_type == 'ap_micro' %}
+                        {% set image_path = 'images/micro/micro_q' ~ question.id ~ '.png' %}
+                        {% if image_path %}
+                        <div class="question-image-container" style="margin-bottom: 20px; text-align: center;">
+                            <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.parentElement.style.display='none';">
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                        
                         {% if question.options %}
                         <div class="options-list">
                             {% for option in question.options %}
