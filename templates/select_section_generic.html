@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     <div class="back-button" style="margin-bottom: 20px;">
         <a href="{{ url_for('select_exam') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> {{ _('Back to Exam Selection') }}
@@ -98,6 +109,56 @@
     </div>
     
     <style>
+        .flash-messages {
+            margin-bottom: 24px;
+        }
+        
+        .flash-message {
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .flash-message::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+        
+        .flash-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .flash-error::before {
+            content: '\f071';
+        }
+        
+        .flash-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .flash-success::before {
+            content: '\f058';
+        }
+        
+        .flash-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+        
+        .flash-info::before {
+            content: '\f05a';
+        }
+        
         .section-title {
             font-size: 28px;
             font-weight: 700;

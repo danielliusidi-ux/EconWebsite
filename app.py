@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 from flask_babel import Babel, gettext as _
 import os
 import uuid
@@ -378,16 +378,6 @@ def generate_quiz(exam_type):
         if not keywords:
             return questions
         
-        # 扩展关键词（包含同义词）
-        expanded_keywords = []
-        for kw in keywords:
-            expanded_keywords.append(kw)
-            if kw in SYNONYMS:
-                expanded_keywords.extend(SYNONYMS[kw])
-        
-        # 去重
-        expanded_keywords = list(set(expanded_keywords))
-        
         filtered = []
         for q in questions:
             text = ' '.join([
@@ -395,53 +385,87 @@ def generate_quiz(exam_type):
                 ' '.join(q.get('options', [])),
                 q.get('explanation', '')
             ]).lower()
-            # 只要包含任意一个关键词即可匹配
-            if any(kw in text for kw in expanded_keywords):
+            
+            # 所有关键词都要匹配
+            all_match = True
+            for kw in keywords:
+                # 检查该关键词及其同义词是否都匹配
+                has_match = False
+                
+                # 检查原关键词
+                if kw in text:
+                    has_match = True
+                # 检查同义词
+                elif kw in SYNONYMS:
+                    for syn in SYNONYMS[kw]:
+                        if syn in text:
+                            has_match = True
+                            break
+                
+                if not has_match:
+                    all_match = False
+                    break
+            
+            if all_match:
                 filtered.append(q)
+        
         return filtered
     
     if sections_param:
         try:
             selected_sections = json.loads(sections_param)
-            # 按章节分组并应用关键词过滤
-            section_questions = {}
-            for s in selected_sections:
-                section_qs = [q for q in questions_all if q.get('section') == s]
-                section_questions[s] = filter_by_keywords(section_qs, keywords_param)
             
-            # 计算每个章节应该选多少题
-            num_sections = len(selected_sections)
-            questions_per_section = count // num_sections
-            remaining_questions = count % num_sections
-            
-            # 从每个章节均匀随机挑选题目
-            for i, s in enumerate(selected_sections):
-                q_list = section_questions[s]
-                # 第一个 remaining_questions 个章节多拿1题
-                num_to_take = questions_per_section + (1 if i < remaining_questions else 0)
-                # 确保不超过该章节的题目数量
-                num_to_take = min(num_to_take, len(q_list))
+            # 如果有关键词搜索，先找出所有符合关键词的题目，然后随机选择
+            if keywords_param:
+                # 先从选中的章节中找出所有符合关键词的题目
+                all_matching_questions = []
+                for s in selected_sections:
+                    section_qs = [q for q in questions_all if q.get('section') == s]
+                    filtered_qs = filter_by_keywords(section_qs, keywords_param)
+                    all_matching_questions.extend(filtered_qs)
+                
                 # 随机打乱并选择
-                random.shuffle(q_list)
-                selected_questions.extend(q_list[:num_to_take])
-            
-            # 最后打乱所有选中的题目顺序
-            random.shuffle(selected_questions)
-            
-            # 如果题数不够，用第一个章节的题补足（也应用关键词过滤）
-            if len(selected_questions) < count and selected_sections:
-                first_section = selected_sections[0]
-                first_section_questions = [q for q in questions_all if q.get('section') == first_section]
-                first_section_questions = filter_by_keywords(first_section_questions, keywords_param)
-                random.shuffle(first_section_questions)
-                for q in first_section_questions:
-                    if len(selected_questions) >= count:
-                        break
-                    if q not in selected_questions:
-                        selected_questions.append(q)
-            
-            # 确保题数不超过要求
-            selected_questions = selected_questions[:count]
+                random.shuffle(all_matching_questions)
+                selected_questions = all_matching_questions[:count]
+            else:
+                # 没有关键词搜索时，按章节均匀分配题目
+                section_questions = {}
+                for s in selected_sections:
+                    section_qs = [q for q in questions_all if q.get('section') == s]
+                    section_questions[s] = section_qs
+                
+                # 计算每个章节应该选多少题
+                num_sections = len(selected_sections)
+                questions_per_section = count // num_sections
+                remaining_questions = count % num_sections
+                
+                # 从每个章节均匀随机挑选题目
+                for i, s in enumerate(selected_sections):
+                    q_list = section_questions[s]
+                    # 第一个 remaining_questions 个章节多拿1题
+                    num_to_take = questions_per_section + (1 if i < remaining_questions else 0)
+                    # 确保不超过该章节的题目数量
+                    num_to_take = min(num_to_take, len(q_list))
+                    # 随机打乱并选择
+                    random.shuffle(q_list)
+                    selected_questions.extend(q_list[:num_to_take])
+                
+                # 最后打乱所有选中的题目顺序
+                random.shuffle(selected_questions)
+                
+                # 如果题数不够，用第一个章节的题补足
+                if len(selected_questions) < count and selected_sections:
+                    first_section = selected_sections[0]
+                    first_section_questions = [q for q in questions_all if q.get('section') == first_section]
+                    random.shuffle(first_section_questions)
+                    for q in first_section_questions:
+                        if len(selected_questions) >= count:
+                            break
+                        if q not in selected_questions:
+                            selected_questions.append(q)
+                
+                # 确保题数不超过要求
+                selected_questions = selected_questions[:count]
             
         except (json.JSONDecodeError, Exception):
             # 如果解析失败，回退到单个章节或所有题目的模式
@@ -461,6 +485,21 @@ def generate_quiz(exam_type):
         questions = filter_by_keywords(questions, keywords_param)
         random.shuffle(questions)
         selected_questions = questions[:count]
+    
+    # 检查是否有题目被选中
+    if not selected_questions:
+        if keywords_param:
+            flash(f"No questions found matching keywords: '{keywords_param}'. Please try different keywords.", "error")
+        else:
+            flash("No questions found. Please try again.", "error")
+        
+        # 重定向回选择页面
+        if exam_type == 'ap_micro':
+            return redirect(url_for('select_section_ap_micro'))
+        elif exam_type == 'ap_macro':
+            return redirect(url_for('select_section_ap_macro'))
+        else:
+            return redirect(url_for('select_exam'))
     
     # 生成共享quiz
     quiz_id = str(uuid.uuid4())
