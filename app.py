@@ -343,18 +343,71 @@ def generate_quiz(exam_type):
     sections_param = request.args.get('sections')
     section = request.args.get('section')
     count = request.args.get('count', type=int, default=10)
+    keywords_param = request.args.get('keywords', '')
     
     # 获取符合条件的题目
     questions_all = QUESTION_BANK[exam_type]
     selected_questions = []
     
+    # 同义词词典
+    SYNONYMS = {
+        'cpi': ['cpi', 'consumer price index'],
+        'consumer': ['cpi', 'consumer price index'],
+        'price': ['cpi', 'consumer price index'],
+        'index': ['cpi', 'consumer price index'],
+        'gdp': ['gdp', 'gross domestic product'],
+        'gross': ['gdp', 'gross domestic product'],
+        'domestic': ['gdp', 'gross domestic product'],
+        'product': ['gdp', 'gross domestic product'],
+        'unemployment': ['unemployment', 'unemployed'],
+        'unemployed': ['unemployment', 'unemployed'],
+        'inflation': ['inflation', 'inflated', 'price increase'],
+        'interest': ['interest', 'interest rate'],
+        'rate': ['interest', 'interest rate', 'exchange rate'],
+        'exchange': ['exchange rate'],
+        'fiscal': ['fiscal', 'fiscal policy'],
+        'monetary': ['monetary', 'monetary policy'],
+        'policy': ['fiscal policy', 'monetary policy'],
+    }
+    
+    # 关键词过滤函数
+    def filter_by_keywords(questions, keywords_str):
+        if not keywords_str:
+            return questions
+        keywords = [kw.strip().lower() for kw in keywords_str.split() if kw.strip()]
+        if not keywords:
+            return questions
+        
+        # 扩展关键词（包含同义词）
+        expanded_keywords = []
+        for kw in keywords:
+            expanded_keywords.append(kw)
+            if kw in SYNONYMS:
+                expanded_keywords.extend(SYNONYMS[kw])
+        
+        # 去重
+        expanded_keywords = list(set(expanded_keywords))
+        
+        filtered = []
+        for q in questions:
+            text = ' '.join([
+                q.get('question', ''),
+                ' '.join(q.get('options', [])),
+                q.get('explanation', '')
+            ]).lower()
+            # 只要包含任意一个关键词即可匹配
+            if any(kw in text for kw in expanded_keywords):
+                filtered.append(q)
+        return filtered
+    
     if sections_param:
         try:
             selected_sections = json.loads(sections_param)
-            # 按章节分组
+            # 按章节分组并应用关键词过滤
             section_questions = {}
             for s in selected_sections:
-                section_questions[s] = [q for q in questions_all if q.get('section') == s]
+                section_qs = [q for q in questions_all if q.get('section') == s]
+                section_questions[s] = filter_by_keywords(section_qs, keywords_param)
             
             # 计算每个章节应该选多少题
             num_sections = len(selected_sections)
@@ -375,10 +428,11 @@ def generate_quiz(exam_type):
             # 最后打乱所有选中的题目顺序
             random.shuffle(selected_questions)
             
-            # 如果题数不够，用第一个章节的题补足
+            # 如果题数不够，用第一个章节的题补足（也应用关键词过滤）
             if len(selected_questions) < count and selected_sections:
                 first_section = selected_sections[0]
                 first_section_questions = [q for q in questions_all if q.get('section') == first_section]
+                first_section_questions = filter_by_keywords(first_section_questions, keywords_param)
                 random.shuffle(first_section_questions)
                 for q in first_section_questions:
                     if len(selected_questions) >= count:
@@ -394,6 +448,8 @@ def generate_quiz(exam_type):
             questions = questions_all
             if section:
                 questions = [q for q in questions if q.get('section') == section]
+            # 应用关键词过滤
+            questions = filter_by_keywords(questions, keywords_param)
             random.shuffle(questions)
             selected_questions = questions[:count]
     else:
@@ -401,6 +457,8 @@ def generate_quiz(exam_type):
         questions = questions_all
         if section:
             questions = [q for q in questions if q.get('section') == section]
+        # 应用关键词过滤
+        questions = filter_by_keywords(questions, keywords_param)
         random.shuffle(questions)
         selected_questions = questions[:count]
     

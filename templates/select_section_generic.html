@@ -86,6 +86,9 @@
                     </div>
                     {% endfor %}
                 </div>
+                <label for="quiz-keywords">{{ _('Key Words (optional):') }}</label>
+                <input type="text" id="quiz-keywords" placeholder="Enter keywords to search...">
+                <p class="quiz-hint" style="font-size: 12px;">Separate multiple keywords with spaces</p>
                 <label for="quiz-count">{{ _('Number of questions:') }}</label>
                 <input type="number" id="quiz-count" min="1" max="500" value="10">
                 <p class="quiz-hint">{{ _('Max questions:') }} <span id="max-count">0</span></p>
@@ -391,9 +394,20 @@
             box-sizing: border-box;
         }
         
-        .quiz-form input[type="number"]:focus {
+        .quiz-form input[type="number"]:focus,
+        .quiz-form input[type="text"]:focus {
             outline: none;
             border-color: #3f51b5;
+        }
+        
+        .quiz-form input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
         }
         
         .quiz-hint {
@@ -476,9 +490,14 @@
             }
             
             const sections = Array.from(checkboxes).map(cb => cb.value);
+            const keywords = document.getElementById('quiz-keywords').value.trim();
             
             closeQuizModal();
-            window.location.href = '/generate-quiz/' + currentExamType + '?sections=' + encodeURIComponent(JSON.stringify(sections)) + '&count=' + count;
+            let url = '/generate-quiz/' + currentExamType + '?sections=' + encodeURIComponent(JSON.stringify(sections)) + '&count=' + count;
+            if (keywords) {
+                url += '&keywords=' + encodeURIComponent(keywords);
+            }
+            window.location.href = url;
         }
         
         window.onclick = function(event) {
