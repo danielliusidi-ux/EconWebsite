@@ -26,6 +26,16 @@
         <span class="section-subtitle">{{ _('Select a Section to Practice') }}</span>
     </div>
     
+    {% if seen_count > 0 %}
+    <div class="progress-info" style="margin-bottom: 24px; padding: 16px 20px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-check-circle" style="color: #2e7d32; font-size: 20px;"></i>
+        <div>
+            <strong style="color: #2e7d32;">{{ _('Progress') }}</strong>
+            <span style="color: #388e3c; margin-left: 8px;">{{ seen_count }} / {{ stats.total_questions }} {{ _('questions completed') }}</span>
+        </div>
+    </div>
+    {% endif %}
+    
     {% if stats.section_counts %}
     <div class="generate-quiz-top">
         <button class="btn-quiz-generate-top" onclick="showQuizModal()">

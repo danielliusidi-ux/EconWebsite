@@ -313,22 +313,31 @@ def select_exam():
 def select_section_ap_micro():
     stats = get_user_stats()
     ap_micro_stats = stats['exam_stats'].get('ap_micro', {})
+    # 获取已完成题目数
+    seen_questions_key = 'seen_questions_ap_micro'
+    seen_count = len(session.get(seen_questions_key, []))
     return render_template('select_section.html',
                            languages=LANGUAGES,
                            current_language=get_locale(),
-                           stats=ap_micro_stats)
+                           stats=ap_micro_stats,
+                           exam_type='ap_micro',
+                           seen_count=seen_count)
 
 # 选择AP Macro章节
 @app.route('/select-section/ap_macro')
 def select_section_ap_macro():
     stats = get_user_stats()
     ap_macro_stats = stats['exam_stats'].get('ap_macro', {})
+    # 获取已完成题目数
+    seen_questions_key = 'seen_questions_ap_macro'
+    seen_count = len(session.get(seen_questions_key, []))
     return render_template('select_section_generic.html',
                            languages=LANGUAGES,
                            current_language=get_locale(),
                            stats=ap_macro_stats,
                            exam_type='ap_macro',
-                           exam_title=_('AP Macroeconomics'))
+                           exam_title=_('AP Macroeconomics'),
+                           seen_count=seen_count)
 
 # 刷题页面 (单题模式)
 import random
@@ -348,6 +357,17 @@ def generate_quiz(exam_type):
     # 获取符合条件的题目
     questions_all = QUESTION_BANK[exam_type]
     selected_questions = []
+    
+    # 获取已考察过的题目
+    seen_questions_key = f'seen_questions_{exam_type}'
+    seen_question_ids = set(session.get(seen_questions_key, []))
+    
+    # 检查是否所有题目都考察过了，如果是则重置
+    all_question_ids = {q['id'] for q in questions_all}
+    if len(seen_question_ids) >= len(all_question_ids):
+        seen_question_ids = set()
+        session[seen_questions_key] = []
+        flash('All questions have been reviewed! Starting fresh with all questions again.', 'info')
     
     # 同义词词典
     SYNONYMS = {
@@ -424,6 +444,9 @@ def generate_quiz(exam_type):
                     filtered_qs = filter_by_keywords(section_qs, keywords_param)
                     all_matching_questions.extend(filtered_qs)
                 
+                # 排除已考察过的题目
+                all_matching_questions = [q for q in all_matching_questions if q['id'] not in seen_question_ids]
+                
                 # 随机打乱并选择
                 random.shuffle(all_matching_questions)
                 selected_questions = all_matching_questions[:count]
@@ -432,6 +455,8 @@ def generate_quiz(exam_type):
                 section_questions = {}
                 for s in selected_sections:
                     section_qs = [q for q in questions_all if q.get('section') == s]
+                    # 排除已考察过的题目
+                    section_qs = [q for q in section_qs if q['id'] not in seen_question_ids]
                     section_questions[s] = section_qs
                 
                 # 计算每个章节应该选多少题
@@ -457,6 +482,7 @@ def generate_quiz(exam_type):
                 if len(selected_questions) < count and selected_sections:
                     first_section = selected_sections[0]
                     first_section_questions = [q for q in questions_all if q.get('section') == first_section]
+                    first_section_questions = [q for q in first_section_questions if q['id'] not in seen_question_ids]
                     random.shuffle(first_section_questions)
                     for q in first_section_questions:
                         if len(selected_questions) >= count:
@@ -474,6 +500,8 @@ def generate_quiz(exam_type):
                 questions = [q for q in questions if q.get('section') == section]
             # 应用关键词过滤
             questions = filter_by_keywords(questions, keywords_param)
+            # 排除已考察过的题目
+            questions = [q for q in questions if q['id'] not in seen_question_ids]
             random.shuffle(questions)
             selected_questions = questions[:count]
     else:
@@ -483,6 +511,8 @@ def generate_quiz(exam_type):
             questions = [q for q in questions if q.get('section') == section]
         # 应用关键词过滤
         questions = filter_by_keywords(questions, keywords_param)
+        # 排除已考察过的题目
+        questions = [q for q in questions if q['id'] not in seen_question_ids]
         random.shuffle(questions)
         selected_questions = questions[:count]
     
@@ -668,6 +698,14 @@ def quiz_result():
     elif exam_type == 'ap_macro':
         back_url = url_for('select_section_ap_macro')
     
+    # 将本次完成的题目加入已考察记录
+    seen_questions_key = f'seen_questions_{exam_type}'
+    seen_question_ids = set(session.get(seen_questions_key, []))
+    for q in questions:
+        seen_question_ids.add(q['id'])
+    session[seen_questions_key] = list(seen_question_ids)
+    session.modified = True
+    
     # 清理session
     session.pop('custom_quiz_questions', None)
     session.pop('custom_quiz_exam_type', None)
@@ -829,6 +867,14 @@ def shared_quiz_result():
             time_display = f'{minutes}:{seconds:02d}'
         else:
             time_display = f'0:{seconds:02d}'
+    
+    # 将本次完成的题目加入已考察记录
+    seen_questions_key = f'seen_questions_{exam_type}'
+    seen_question_ids = set(session.get(seen_questions_key, []))
+    for q in questions:
+        seen_question_ids.add(q['id'])
+    session[seen_questions_key] = list(seen_question_ids)
+    session.modified = True
     
     return render_template('quiz_result_shared.html',
                            score=score,
