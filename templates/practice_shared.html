@@ -160,12 +160,14 @@
         {{ question.question }}
     </div>
     
-    {% set image_path = 'images/micro/micro_q' ~ question.id ~ '.png' %}
-    {% if image_path %}
+    {% if exam_type == 'ap_macro' %}
+        {% set image_path = 'images/macro/macro_q' ~ question.id ~ '.png' %}
+    {% else %}
+        {% set image_path = 'images/micro/micro_q' ~ question.id ~ '.png' %}
+    {% endif %}
     <div class="question-image-container">
         <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" onerror="this.style.display='none'; this.parentElement.style.display='none';">
     </div>
-    {% endif %}
     
     <form id="question-form">
         <div class="options-list">

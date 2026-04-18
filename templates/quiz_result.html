@@ -157,6 +157,18 @@
         color: #2c3e50;
     }
     
+    .question-image-container {
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .question-image {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
     .action-buttons {
         margin-top: 40px;
         display: flex;
@@ -247,12 +259,14 @@
             
             <div class="review-question">{{ item.question.question }}</div>
             
-            {% set image_path = 'images/micro/micro_q' ~ item.question.id ~ '.png' %}
-            {% if image_path %}
+            {% if exam_type == 'ap_macro' %}
+                {% set image_path = 'images/macro/macro_q' ~ item.question.id ~ '.png' %}
+            {% else %}
+                {% set image_path = 'images/micro/micro_q' ~ item.question.id ~ '.png' %}
+            {% endif %}
             <div class="question-image-container">
                 <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" onerror="this.style.display='none'; this.parentElement.style.display='none';">
             </div>
-            {% endif %}
             
             <div class="review-options">
                 {% for option in item.question.options %}
