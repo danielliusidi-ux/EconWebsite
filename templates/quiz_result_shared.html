@@ -235,8 +235,10 @@
             {% else %}
                 {% set image_path = 'images/micro/micro_q' ~ item.question.id ~ '.png' %}
             {% endif %}
-            <div class="question-image-container">
-                <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" onerror="this.style.display='none'; this.parentElement.style.display='none';">
+            <div class="question-image-container" style="display: none;">
+                <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" 
+                     onload="this.parentElement.style.display='block';" 
+                     onerror="this.style.display='none'; this.parentElement.style.display='none';">
             </div>
             
             <div class="review-options">

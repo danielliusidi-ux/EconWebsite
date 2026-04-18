@@ -220,15 +220,19 @@
     
     {% if exam_type == 'ap_micro' %}
     {% set image_path = 'images/micro/micro_q' ~ question.id ~ '.png' %}
-    <div class="question-image-container">
-        <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" onerror="this.style.display='none'; this.parentElement.style.display='none';">
+    <div class="question-image-container" style="display: none;">
+        <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" 
+             onload="this.parentElement.style.display='block';" 
+             onerror="this.style.display='none'; this.parentElement.style.display='none';">
     </div>
     {% endif %}
     
     {% if exam_type == 'ap_macro' %}
     {% set image_path = 'images/macro/macro_q' ~ question.id ~ '.png' %}
-    <div class="question-image-container">
-        <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" onerror="this.style.display='none'; this.parentElement.style.display='none';">
+    <div class="question-image-container" style="display: none;">
+        <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" 
+             onload="this.parentElement.style.display='block';" 
+             onerror="this.style.display='none'; this.parentElement.style.display='none';">
     </div>
     {% endif %}
     

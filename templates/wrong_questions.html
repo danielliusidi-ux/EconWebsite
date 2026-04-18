@@ -434,12 +434,17 @@
                         <div class="question-text">{{ question.question }}</div>
                         
                         {% if question.exam_type == 'ap_micro' %}
-                        {% set image_path = 'images/micro/micro_q' ~ question.id ~ '.png' %}
-                        {% if image_path %}
-                        <div class="question-image-container" style="margin-bottom: 20px; text-align: center;">
-                            <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" class="question-image" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onerror="this.style.display='none'; this.parentElement.style.display='none';">
-                        </div>
+                            {% set image_path = 'images/micro/micro_q' ~ question.id ~ '.png' %}
+                        {% elif question.exam_type == 'ap_macro' %}
+                            {% set image_path = 'images/macro/macro_q' ~ question.id ~ '.png' %}
                         {% endif %}
+                        {% if image_path %}
+                        <div class="question-image-container" style="margin-bottom: 20px; text-align: center; display: none;">
+                            <img src="{{ url_for('static', filename=image_path) }}" alt="Question Diagram" 
+                                 style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
+                                 onload="this.parentElement.style.display='block';" 
+                                 onerror="this.style.display='none'; this.parentElement.style.display='none';">
+                        </div>
                         {% endif %}
                         
                         {% if question.options %}
