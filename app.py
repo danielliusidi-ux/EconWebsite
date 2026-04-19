@@ -776,7 +776,7 @@ def quiz_result():
     session[seen_questions_key] = list(seen_question_ids)
     session.modified = True
     
-    # 保存完整结果数据并生成持久化链接
+    # 保存完整结果数据并生成持久化链接（用于分享功能）
     result_id = str(uuid.uuid4())
     result_data = {
         'exam_type': exam_type,
@@ -795,8 +795,19 @@ def quiz_result():
     session.pop('quiz_answers', None)
     session.pop('quiz_start_time', None)
     
-    # 直接重定向到持久化链接
-    return redirect(url_for('shared_quiz_result', result_id=result_id))
+    # 直接渲染普通结果页面（不是shared页面）
+    return render_template('quiz_result.html',
+                           score=score,
+                           correct_count=correct_count,
+                           incorrect_count=incorrect_count,
+                           all_questions=all_questions,
+                           time_display=time_display,
+                           section=section,
+                           exam_type=exam_type,
+                           back_url=back_url,
+                           share_url=url_for('shared_quiz_result', result_id=result_id, _external=True),
+                           languages=LANGUAGES,
+                           current_language=get_locale())
 
 # 共享quiz访问
 @app.route('/shared-quiz/<quiz_id>')
