@@ -198,31 +198,101 @@ if REDIS_AVAILABLE:
         print(f'Redis connection failed: {e}')
         redis_client = None
 
-# 共享quiz数据存储 (内存作为Redis的备用)
-SHARED_QUIZZES = {}
+# 共享quiz数据存储 (文件系统作为Redis的备用)
+import os
+SHARED_QUIZZES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shared_quizzes')
+
+# 确保目录存在
+os.makedirs(SHARED_QUIZZES_DIR, exist_ok=True)
+
+# 获取quiz文件路径
+def get_quiz_file_path(quiz_id):
+    return os.path.join(SHARED_QUIZZES_DIR, f'{quiz_id}.json')
 
 # 存储共享quiz
 def save_shared_quiz(quiz_id, quiz_data):
-    quiz_data_json = json.dumps(quiz_data)
+    # 添加过期时间（7天）
+    quiz_data_with_expiry = quiz_data.copy()
+    quiz_data_with_expiry['_expires_at'] = time.time() + 86400 * 7
+    
+    quiz_data_json = json.dumps(quiz_data_with_expiry)
+    
+    # 优先使用Redis
     if redis_client:
         try:
             redis_client.setex(f'quiz:{quiz_id}', 86400 * 7, quiz_data_json)
             return True
         except Exception as e:
             print(f'Failed to save to Redis: {e}')
-    SHARED_QUIZZES[quiz_id] = quiz_data
-    return True
+    
+    # 备用：保存到文件
+    try:
+        file_path = get_quiz_file_path(quiz_id)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(quiz_data_json)
+        return True
+    except Exception as e:
+        print(f'Failed to save to file: {e}')
+        return False
 
 # 获取共享quiz
 def get_shared_quiz(quiz_id):
+    # 优先从Redis获取
     if redis_client:
         try:
             quiz_data_json = redis_client.get(f'quiz:{quiz_id}')
             if quiz_data_json:
-                return json.loads(quiz_data_json)
+                quiz_data = json.loads(quiz_data_json)
+                # 检查是否过期（Redis自带过期，但以防万一）
+                if '_expires_at' not in quiz_data or quiz_data['_expires_at'] > time.time():
+                    return quiz_data
         except Exception as e:
             print(f'Failed to get from Redis: {e}')
-    return SHARED_QUIZZES.get(quiz_id)
+    
+    # 备用：从文件获取
+    try:
+        file_path = get_quiz_file_path(quiz_id)
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                quiz_data = json.loads(f.read())
+            # 检查是否过期
+            if '_expires_at' in quiz_data and quiz_data['_expires_at'] <= time.time():
+                # 删除过期文件
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+                return None
+            return quiz_data
+    except Exception as e:
+        print(f'Failed to get from file: {e}')
+    
+    return None
+
+# 清理过期的quiz文件
+def cleanup_expired_quizzes():
+    try:
+        if not os.path.exists(SHARED_QUIZZES_DIR):
+            return
+        now = time.time()
+        for filename in os.listdir(SHARED_QUIZZES_DIR):
+            if filename.endswith('.json'):
+                file_path = os.path.join(SHARED_QUIZZES_DIR, filename)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        quiz_data = json.loads(f.read())
+                    if '_expires_at' in quiz_data and quiz_data['_expires_at'] <= now:
+                        os.remove(file_path)
+                        print(f'Cleaned up expired quiz: {filename}')
+                except Exception as e:
+                    # 如果文件损坏，直接删除
+                    try:
+                        os.remove(file_path)
+                    except:
+                        pass
+                    print(f'Cleaned up corrupted quiz file: {filename}')
+    except Exception as e:
+        print(f'Error during cleanup: {e}')
 
 # 辅助函数：获取用户统计
 def get_user_stats():
@@ -731,6 +801,11 @@ def quiz_result():
 # 共享quiz访问
 @app.route('/shared-quiz/<quiz_id>')
 def shared_quiz(quiz_id):
+    # 偶尔清理过期数据（10%概率）
+    import random
+    if random.random() < 0.1:
+        cleanup_expired_quizzes()
+    
     quiz_data = get_shared_quiz(quiz_id)
     if not quiz_data:
         return 'Quiz not found', 404
@@ -808,6 +883,11 @@ def save_shared_quiz_answer():
 # 共享quiz结果页面
 @app.route('/shared-quiz-result')
 def shared_quiz_result():
+    # 偶尔清理过期数据（10%概率）
+    import random
+    if random.random() < 0.1:
+        cleanup_expired_quizzes()
+    
     result_id = request.args.get('result_id')
     
     if result_id:

@@ -32,6 +32,7 @@ wheels/
 
 # Project specific
 server.log
+shared_quizzes/
 parse_questions.py
 parse_all_questions.py
 parse_ap_macro.py
