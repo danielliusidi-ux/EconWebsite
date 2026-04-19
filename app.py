@@ -217,26 +217,43 @@ def save_shared_quiz(quiz_id, quiz_data):
     
     quiz_data_json = json.dumps(quiz_data_with_expiry)
     
+    saved = False
+    
     # 优先使用Redis
     if redis_client:
         try:
             redis_client.setex(f'quiz:{quiz_id}', 86400 * 7, quiz_data_json)
-            return True
+            saved = True
+            print(f'Successfully saved quiz {quiz_id} to Redis')
         except Exception as e:
             print(f'Failed to save to Redis: {e}')
     
-    # 备用：保存到文件
+    # 备用：保存到文件（即使Redis保存成功也保存到文件作为双重保险）
     try:
         file_path = get_quiz_file_path(quiz_id)
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(quiz_data_json)
-        return True
+            f.flush()  # 确保数据立即写入磁盘
+            os.fsync(f.fileno())  # 强制刷新到磁盘
+        # 验证文件确实保存成功
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                verify_data = json.loads(f.read())
+                if verify_data.get('_expires_at') == quiz_data_with_expiry.get('_expires_at'):
+                    print(f'Successfully saved and verified quiz {quiz_id} to file: {file_path}')
+                    saved = True
     except Exception as e:
         print(f'Failed to save to file: {e}')
-        return False
+    
+    if not saved:
+        print(f'ERROR: Failed to save quiz {quiz_id} using any method!')
+    
+    return saved
 
 # 获取共享quiz
 def get_shared_quiz(quiz_id):
+    print(f'Attempting to load quiz: {quiz_id}')
+    
     # 优先从Redis获取
     if redis_client:
         try:
@@ -245,13 +262,17 @@ def get_shared_quiz(quiz_id):
                 quiz_data = json.loads(quiz_data_json)
                 # 检查是否过期（Redis自带过期，但以防万一）
                 if '_expires_at' not in quiz_data or quiz_data['_expires_at'] > time.time():
+                    print(f'Successfully loaded quiz {quiz_id} from Redis')
                     return quiz_data
+                else:
+                    print(f'Quiz {quiz_id} expired in Redis')
         except Exception as e:
             print(f'Failed to get from Redis: {e}')
     
     # 备用：从文件获取
     try:
         file_path = get_quiz_file_path(quiz_id)
+        print(f'Checking file: {file_path}, exists: {os.path.exists(file_path)}')
         if os.path.exists(file_path):
             with open(file_path, 'r', encoding='utf-8') as f:
                 quiz_data = json.loads(f.read())
@@ -260,13 +281,26 @@ def get_shared_quiz(quiz_id):
                 # 删除过期文件
                 try:
                     os.remove(file_path)
+                    print(f'Removed expired quiz file: {file_path}')
                 except:
                     pass
                 return None
+            print(f'Successfully loaded quiz {quiz_id} from file')
             return quiz_data
+        else:
+            print(f'File not found for quiz: {quiz_id}')
+            # 列出目录中的文件帮助调试
+            try:
+                files = os.listdir(SHARED_QUIZZES_DIR)
+                print(f'Available files in {SHARED_QUIZZES_DIR}: {files[:10]}')
+            except Exception as e:
+                print(f'Failed to list files: {e}')
     except Exception as e:
         print(f'Failed to get from file: {e}')
+        import traceback
+        traceback.print_exc()
     
+    print(f'Quiz {quiz_id} not found')
     return None
 
 # 清理过期的quiz文件
@@ -786,7 +820,37 @@ def quiz_result():
         'section': section,
         'is_result': True
     }
-    save_shared_quiz(result_id, result_data)
+    
+    print(f'About to save quiz result: {result_id}')
+    save_success = save_shared_quiz(result_id, result_data)
+    
+    if not save_success:
+        print(f'ERROR: Failed to save quiz result {result_id}!')
+        # 如果保存失败，仍然尝试渲染页面（从session读取）
+        return render_template('quiz_result_shared.html',
+                           score=score,
+                           correct_count=correct_count,
+                           incorrect_count=incorrect_count,
+                           all_questions=all_questions,
+                           time_display=time_display,
+                           section=section,
+                           is_shared=False,
+                           exam_type=exam_type,
+                           languages=LANGUAGES,
+                           current_language=get_locale())
+    
+    print(f'Successfully saved quiz result {result_id}, preparing to redirect...')
+    
+    # 稍微等待一下确保文件写入完成（额外的安全措施）
+    import time
+    time.sleep(0.1)
+    
+    # 验证数据是否可以读取
+    verify_data = get_shared_quiz(result_id)
+    if verify_data:
+        print(f'Verified that quiz {result_id} can be read back successfully')
+    else:
+        print(f'WARNING: Quiz {result_id} saved but cannot be read back immediately!')
     
     # 清理session
     session.pop('custom_quiz_questions', None)
@@ -796,7 +860,9 @@ def quiz_result():
     session.pop('quiz_start_time', None)
     
     # 直接重定向到持久化链接
-    return redirect(url_for('shared_quiz_result', result_id=result_id))
+    redirect_url = url_for('shared_quiz_result', result_id=result_id, _external=True)
+    print(f'Redirecting to: {redirect_url}')
+    return redirect(redirect_url)
 
 # 共享quiz访问
 @app.route('/shared-quiz/<quiz_id>')
@@ -889,11 +955,14 @@ def shared_quiz_result():
         cleanup_expired_quizzes()
     
     result_id = request.args.get('result_id')
+    print(f'shared_quiz_result called with result_id: {result_id}')
+    print(f'Request URL: {request.url}')
     
     if result_id:
         # 通过result_id加载持久化的结果数据
         result_data = get_shared_quiz(result_id)
         if result_data and result_data.get('is_result'):
+            print(f'Successfully loaded result data for {result_id}')
             custom_quiz_ids = result_data['question_ids']
             exam_type = result_data['exam_type']
             quiz_answers = result_data['quiz_answers']
@@ -901,7 +970,9 @@ def shared_quiz_result():
             section = result_data['section']
             is_shared = True
         else:
-            return 'Result not found', 404
+            print(f'ERROR: Result not found for result_id: {result_id}')
+            # 提供更友好的错误页面
+            return render_template('error_result_not_found.html', result_id=result_id), 404
     else:
         # 从session加载（原有逻辑）
         custom_quiz_ids = session.get('custom_quiz_questions', [])
