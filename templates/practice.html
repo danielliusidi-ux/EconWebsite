@@ -176,6 +176,129 @@
         background-color: #ffebee !important;
         color: #c62828 !important;
     }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .practice-header {
+            margin-bottom: 20px;
+        }
+        
+        .progress-container {
+            gap: 10px;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+        }
+        
+        .question-card {
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .question-meta {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 12px;
+        }
+        
+        .meta-left {
+            gap: 8px;
+        }
+        
+        .difficulty-badge {
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .question-image {
+            max-height: 250px;
+        }
+        
+        .options-list {
+            gap: 12px;
+        }
+        
+        .option-label {
+            padding: 14px 16px;
+            font-size: 15px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feedback-section {
+            margin-top: 20px;
+            padding: 15px;
+        }
+        
+        .explanation-box {
+            font-size: 13px;
+        }
+        
+        .action-buttons {
+            margin-top: 25px;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 16px;
+            justify-content: center;
+        }
+        
+        /* Share section mobile optimization */
+        .practice-header > div:last-child {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .practice-header > div:last-child > div {
+            width: 100%;
+        }
+        
+        .practice-header input[type="text"] {
+            font-size: 12px;
+            min-width: 0;
+        }
+        
+        .practice-header button {
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+        }
+    }
+    
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+        .question-card {
+            padding: 15px;
+        }
+        
+        .question-text {
+            font-size: 15px;
+        }
+        
+        .option-label {
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+        
+        .question-image {
+            max-height: 200px;
+        }
+        
+        .btn-outline {
+            width: 36px !important;
+            height: 36px !important;
+        }
+    }
 </style>
 
 <div class="practice-header">
