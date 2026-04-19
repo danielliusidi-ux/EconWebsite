@@ -285,15 +285,20 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
+    const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+    
+    if (isMobile && !isWeChat) {
         document.getElementById('mobile-hint').style.display = 'block';
     }
 });
 
 function exportToPDF() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
     
-    if (isMobile) {
+    if (isWeChat) {
+        alert('微信浏览器不支持直接导出PDF。\n\n请点击右上角的三个点「...」，选择「在浏览器中打开」，然后在浏览器中点击「Export to PDF」按钮');
+    } else if (isMobile) {
         alert('请使用浏览器的分享功能保存为PDF。\n\n步骤：\n1. 点击浏览器的分享按钮（通常是带有箭头的方框图标）\n2. 向下滚动找到并选择"打印"\n3. 在打印预览页面，用双指向外缩放页面\n4. 然后点击分享按钮，选择"保存为PDF"');
     } else {
         window.print();
