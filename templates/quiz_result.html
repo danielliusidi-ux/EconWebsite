@@ -174,6 +174,71 @@
         display: flex;
         gap: 15px;
         justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-wechat {
+        background: linear-gradient(135deg, #07c160 0%, #05a050 100%);
+        color: white;
+    }
+    
+    .btn-wechat:hover {
+        background: linear-gradient(135deg, #06ad56 0%, #048a45 100%);
+    }
+    
+    #image-preview-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        overflow: auto;
+    }
+    
+    #image-preview-modal .modal-content {
+        background-color: white;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 90%;
+        width: 400px;
+        position: relative;
+    }
+    
+    #image-preview-modal .close {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+        font-size: 28px;
+        cursor: pointer;
+        color: #999;
+    }
+    
+    #image-preview-modal .close:hover {
+        color: #333;
+    }
+    
+    #generated-image {
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    #image-preview-modal .hint {
+        margin-top: 15px;
+        padding: 12px;
+        background: #e8f5e9;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #2e7d32;
+        text-align: center;
+    }
+    
+    #image-preview-modal .hint i {
+        margin-right: 8px;
     }
     
     .pdf-container {
@@ -425,13 +490,16 @@
 </div>
 
 <div class="action-buttons" style="margin-top: 20px;">
-    <button onclick="exportToPDF()" class="btn" style="background: #4caf50;">
+    <button onclick="exportToPDF()" class="btn" id="pdf-btn" style="background: #4caf50;">
         <i class="fas fa-file-pdf"></i> {{ _('Export to PDF') }}
     </button>
-    <a href="{{ back_url }}" class="btn btn-secondary">
+    <button onclick="shareAsImage()" class="btn btn-wechat" id="share-image-btn" style="display: none;">
+        <i class="fas fa-image"></i> Share as Image
+    </button>
+    <a href="{{ back_url }}" class="btn btn-secondary" id="back-btn">
         <i class="fas fa-arrow-left"></i> {{ _('Back to Sections') }}
     </a>
-    <a href="{{ url_for('select_exam') }}" class="btn">
+    <a href="{{ url_for('select_exam') }}" class="btn" id="home-btn">
         <i class="fas fa-home"></i> {{ _('Home') }}
     </a>
 </div>
@@ -441,12 +509,29 @@
     <strong>移动设备提示：</strong>点击分享按钮 → 选择"打印" → 选择"保存为PDF"
 </div>
 
+<!-- Image Preview Modal -->
+<div id="image-preview-modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeImageModal()">&times;</span>
+        <img id="generated-image" src="" alt="Quiz Result">
+        <div class="hint">
+            <i class="fas fa-share-alt"></i>
+            长按图片保存或分享给好友
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
     
-    if (isMobile && !isWeChat) {
+    if (isWeChat) {
+        // 微信浏览器显示分享图片按钮，隐藏PDF按钮
+        document.getElementById('pdf-btn').style.display = 'none';
+        document.getElementById('share-image-btn').style.display = 'inline-flex';
+    } else if (isMobile) {
         document.getElementById('mobile-hint').style.display = 'block';
     }
 });
@@ -461,6 +546,50 @@ function exportToPDF() {
         alert('请使用浏览器的分享功能保存为PDF。\n\n步骤：\n1. 点击浏览器的分享按钮（通常是带有箭头的方框图标）\n2. 向下滚动找到并选择"打印"\n3. 在打印预览页面，用双指向外缩放页面\n4. 然后点击分享按钮，选择"保存为PDF"');
     } else {
         window.print();
+    }
+}
+
+function shareAsImage() {
+    const resultContainer = document.getElementById('pdf-content');
+    const modal = document.getElementById('image-preview-modal');
+    const generatedImage = document.getElementById('generated-image');
+    
+    // 显示加载提示
+    const shareBtn = document.getElementById('share-image-btn');
+    const originalText = shareBtn.innerHTML;
+    shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    shareBtn.disabled = true;
+    
+    // 使用 html2canvas 生成图片
+    html2canvas(resultContainer, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#f0f4f8',
+        logging: false
+    }).then(function(canvas) {
+        const imageUrl = canvas.toDataURL('image/png');
+        generatedImage.src = imageUrl;
+        modal.style.display = 'block';
+        shareBtn.innerHTML = originalText;
+        shareBtn.disabled = false;
+    }).catch(function(error) {
+        console.error('Error generating image:', error);
+        alert('生成图片失败，请重试');
+        shareBtn.innerHTML = originalText;
+        shareBtn.disabled = false;
+    });
+}
+
+function closeImageModal() {
+    document.getElementById('image-preview-modal').style.display = 'none';
+}
+
+// 点击模态框外部关闭
+window.onclick = function(event) {
+    const modal = document.getElementById('image-preview-modal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
     }
 }
 </script>
