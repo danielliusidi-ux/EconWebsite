@@ -519,12 +519,16 @@ function shareAsImage() {
     const resultContainer = document.getElementById('pdf-content');
     const modal = document.getElementById('image-preview-modal');
     const generatedImage = document.getElementById('generated-image');
+    const actionButtons = document.querySelector('.action-buttons');
     
     // 显示加载提示
     const shareBtn = document.getElementById('share-image-btn');
     const originalText = shareBtn.innerHTML;
     shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
     shareBtn.disabled = true;
+    
+    // 隐藏按钮区域，避免被截图
+    actionButtons.style.display = 'none';
     
     // 使用 html2canvas 生成图片
     html2canvas(resultContainer, {
@@ -541,12 +545,16 @@ function shareAsImage() {
         // 显示模态框
         modal.style.display = 'block';
         
-        // 恢复按钮状态
+        // 恢复按钮显示和状态
+        actionButtons.style.display = 'flex';
         shareBtn.innerHTML = originalText;
         shareBtn.disabled = false;
     }).catch(function(error) {
         console.error('Error generating image:', error);
         alert('生成图片失败，请重试');
+        
+        // 恢复按钮显示和状态
+        actionButtons.style.display = 'flex';
         shareBtn.innerHTML = originalText;
         shareBtn.disabled = false;
     });
