@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
 from flask_babel import Babel, gettext as _
 import os
+import re
 import uuid
 import time
 import json
+import random
 from dotenv import load_dotenv
 
 try:
@@ -34,10 +36,6 @@ babel.init_app(app, locale_selector=get_locale)
 # 简单的翻译函数，直接从.po文件中读取翻译
 _translations = {}
 _translation_stamp = None
-
-# 加载翻译
-import os
-import re
 
 def load_translations():
     global _translations
@@ -162,9 +160,6 @@ def ensure_question_difficulties():
 ensure_question_difficulties()
 
 
-
-from flask import jsonify
-
 # 模拟用户进度数据 (在实际应用中应存储在数据库中)
 # 结构: exam_type -> {completed: set(question_ids), correct: set(question_ids), total_attempts: 0}
 USER_PROGRESS = {
@@ -199,7 +194,6 @@ if REDIS_AVAILABLE:
         redis_client = None
 
 # 共享quiz数据存储 (文件系统作为Redis的备用)
-import os
 SHARED_QUIZZES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shared_quizzes')
 
 # 确保目录存在
@@ -293,6 +287,84 @@ def cleanup_expired_quizzes():
                     print(f'Cleaned up corrupted quiz file: {filename}')
     except Exception as e:
         print(f'Error during cleanup: {e}')
+
+# Access Code 相关功能
+ACCESS_CODES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'access_codes.json')
+
+def load_access_codes():
+    if not os.path.exists(ACCESS_CODES_FILE):
+        return {'access_codes': {}}
+    try:
+        with open(ACCESS_CODES_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f'Error loading access codes: {e}')
+        return {'access_codes': {}}
+
+def save_access_codes(data):
+    try:
+        with open(ACCESS_CODES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        print(f'Error saving access codes: {e}')
+        return False
+
+def is_device_activated(device_id):
+    data = load_access_codes()
+    for code, info in data['access_codes'].items():
+        if info.get('device_id') == device_id and info.get('activated') == True:
+            expires_at = info.get('expires_at')
+            if expires_at is None or expires_at == '':
+                return True
+            try:
+                from datetime import datetime
+                if datetime.strptime(expires_at, '%Y-%m-%d').timestamp() > time.time():
+                    return True
+                else:
+                    return False
+            except:
+                return True
+    return False
+
+def verify_access_code(code, device_id):
+    data = load_access_codes()
+    code = code.strip()
+    
+    if code not in data['access_codes']:
+        return False, 'Invalid access code'
+    
+    code_info = data['access_codes'][code]
+    
+    if code_info.get('activated') == False:
+        code_info['device_id'] = device_id
+        code_info['activated'] = True
+        save_access_codes(data)
+        return True, 'Activated successfully'
+    
+    existing_device_id = code_info.get('device_id')
+    if existing_device_id == device_id:
+        expires_at = code_info.get('expires_at')
+        if expires_at is None or expires_at == '':
+            return True, 'Already activated'
+        try:
+            from datetime import datetime
+            if datetime.strptime(expires_at, '%Y-%m-%d').timestamp() > time.time():
+                return True, 'Already activated'
+            else:
+                return False, 'Access code has expired'
+        except:
+            return True, 'Already activated'
+    else:
+        return False, 'This access code is already used by another device'
+
+def check_access_required():
+    device_id = request.headers.get('X-Device-ID')
+    if not device_id:
+        device_id = request.args.get('device_id')
+    if not device_id:
+        return True
+    return not is_device_activated(device_id)
 
 # 辅助函数：获取用户统计
 def get_user_stats():
@@ -410,9 +482,6 @@ def select_section_ap_macro():
                            seen_count=seen_count)
 
 # 刷题页面 (单题模式)
-import random
-import time
-
 # 生成自定义quiz
 @app.route('/generate-quiz/<exam_type>')
 def generate_quiz(exam_type):
@@ -1239,6 +1308,125 @@ def clear_wrong_questions():
     
     return jsonify({'success': True})
 
+# 验证 access code
+@app.route('/api/verify-access-code', methods=['POST'])
+def verify_access_code_endpoint():
+    data = request.json
+    code = data.get('code', '')
+    device_id = data.get('device_id', '')
+    
+    print(f"[DEBUG] Verifying code: {code}, device_id: {device_id}")
+    print(f"[DEBUG] Session: {dict(session)}")
+    
+    if not code or not device_id:
+        return jsonify({'success': False, 'message': 'Access code and device ID are required'})
+    
+    success, message = verify_access_code(code, device_id)
+    
+    # 获取重定向 URL
+    redirect_url = session.get('access_required_redirect', '/')
+    print(f"[DEBUG] Redirect URL from session: {redirect_url}")
+    
+    if success and 'access_required_redirect' in session:
+        session.pop('access_required_redirect', None)
+        session.modified = True
+        print(f"[DEBUG] Cleared redirect from session")
+    
+    response_data = {
+        'success': success, 
+        'message': message,
+        'redirect_url': redirect_url if success else None
+    }
+    print(f"[DEBUG] Response: {response_data}")
+    
+    return jsonify(response_data)
+
+# 检查设备是否已激活
+@app.route('/api/check-device-status', methods=['POST'])
+def check_device_status():
+    data = request.json
+    device_id = data.get('device_id', '')
+    
+    if not device_id:
+        return jsonify({'activated': False})
+    
+    activated = is_device_activated(device_id)
+    return jsonify({'activated': activated})
+
+# Access Code 管理页面
+@app.route('/admin/access-codes')
+def admin_access_codes():
+    return render_template('admin_access_codes.html',
+                           languages=LANGUAGES,
+                           current_language=get_locale())
+
+# 获取所有 access codes（管理 API）
+@app.route('/api/admin/access-codes')
+def get_all_access_codes():
+    data = load_access_codes()
+    return jsonify(data)
+
+# 生成新的 access codes
+@app.route('/api/admin/generate-codes', methods=['POST'])
+def generate_access_codes():
+    data = request.json
+    count = min(data.get('count', 5), 100)  # 最多生成100个
+    prefix = data.get('prefix', '')
+    expires_at = data.get('expires_at')
+    notes = data.get('notes', '')
+    
+    codes_data = load_access_codes()
+    generated_codes = []
+    
+    import random
+    import string
+    
+    for _ in range(count):
+        # 生成随机 code
+        random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        code = f"{prefix}{random_part}" if prefix else random_part
+        
+        # 确保不重复
+        while code in codes_data['access_codes']:
+            random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            code = f"{prefix}{random_part}" if prefix else random_part
+        
+        from datetime import datetime
+        codes_data['access_codes'][code] = {
+            'device_id': None,
+            'activated': False,
+            'expires_at': expires_at,
+            'created_at': datetime.now().strftime('%Y-%m-%d'),
+            'notes': notes
+        }
+        generated_codes.append(code)
+    
+    save_access_codes(codes_data)
+    
+    return jsonify({
+        'success': True,
+        'codes': generated_codes,
+        'count': len(generated_codes)
+    })
+
+# 删除 access code
+@app.route('/api/admin/delete-code', methods=['POST'])
+def delete_access_code():
+    data = request.json
+    code = data.get('code', '')
+    
+    if not code:
+        return jsonify({'success': False, 'message': 'Code is required'})
+    
+    codes_data = load_access_codes()
+    
+    if code not in codes_data['access_codes']:
+        return jsonify({'success': False, 'message': 'Code not found'})
+    
+    del codes_data['access_codes'][code]
+    save_access_codes(codes_data)
+    
+    return jsonify({'success': True})
 
 # 生成同类真题（模拟功能）
 @app.route('/similar-questions/<topic>')

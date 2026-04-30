@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Access Required') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 style="margin-bottom: 20px; color: #2c3e50;">
+        <i class="fas fa-lock"></i> {{ _('Access Required') }}
+    </h1>
+    <p style="margin-bottom: 20px; font-size: 16px; line-height: 1.6; color: #7f8c8d;">
+        {{ _('This feature requires an active access code. Please enter your access code to continue.') }}
+    </p>
+    <div class="input-group" style="max-width: 400px; margin-bottom: 20px;">
+        <input type="text" id="access-code-input-page" placeholder="{{ _('Enter your access code') }}" 
+               style="width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;"
+               onkeydown="if(event.key === 'Enter') activateAccessCodePage()">
+    </div>
+    <div id="error-message-page" class="error-message"></div>
+    <div style="display: flex; gap: 15px;">
+        <button class="btn btn-secondary" onclick="window.history.back()">{{ _('Cancel') }}</button>
+        <button class="btn" onclick="activateAccessCodePage()" id="activate-btn-page">{{ _('Activate') }}</button>
+    </div>
+</div>
+
+<style>
+.error-message {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    display: none;
+}
+</style>
+
+<script>
+console.log('[DEBUG] Access required page script loaded');
+console.log('[DEBUG] getDeviceId function exists:', typeof getDeviceId === 'function');
+
+function activateAccessCodePage() {
+    console.log('[DEBUG] activateAccessCodePage called');
+    const code = document.getElementById('access-code-input-page').value.trim();
+    const errorDiv = document.getElementById('error-message-page');
+    const btn = document.getElementById('activate-btn-page');
+
+    console.log('[DEBUG] Code entered:', code);
+
+    if (!code) {
+        errorDiv.textContent = 'Please enter an access code';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activating...';
+
+    const deviceId = getDeviceId();
+    console.log('[DEBUG] Device ID:', deviceId);
+
+    fetch('/api/verify-access-code', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Device-ID': deviceId
+        },
+        body: JSON.stringify({
+            code: code,
+            device_id: deviceId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('API Response:', data);
+        btn.disabled = false;
+        btn.innerHTML = 'Activate';
+        if (data.success) {
+            var redirectUrl = data.redirect_url || '/';
+            console.log('Redirecting to:', redirectUrl);
+            window.location.href = redirectUrl;
+        } else {
+            errorDiv.textContent = data.message;
+            errorDiv.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('[DEBUG] Error:', error);
+        btn.disabled = false;
+        btn.innerHTML = 'Activate';
+        errorDiv.textContent = 'Network error, please try again';
+        errorDiv.style.display = 'block';
+    });
+}
+</script>
+{% endblock %}
