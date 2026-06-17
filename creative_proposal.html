@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EconMaster - 经济学智能在线学习平台 | 创意提案</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-bg {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <!-- 导航栏 -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 text-2xl mr-2"></i>
+                    <span class="font-bold text-xl tracking-tight">Econ<span class="text-blue-600">Master</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#vision" class="text-slate-600 hover:text-blue-600 font-medium">项目愿景</a>
+                    <a href="#features" class="text-slate-600 hover:text-blue-600 font-medium">核心功能</a>
+                    <a href="#tech" class="text-slate-600 hover:text-blue-600 font-medium">技术架构</a>
+                    <a href="#future" class="text-slate-600 hover:text-blue-600 font-medium">未来规划</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg pt-32 pb-20 lg:pt-48 lg:pb-32 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span class="px-4 py-1.5 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm tracking-wide uppercase mb-6 inline-block">
+                Project Proposal 2026
+            </span>
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-black mb-8 leading-tight">
+                新一代经济学 <br/>
+                <span class="gradient-text">智能在线实战平台</span>
+            </h1>
+            <p class="mt-4 text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+                汇聚 AP、IGCSE、A-Level 与 DSE 全球权威经济学真题。通过即时反馈、智能错题本与中英双语支持，为全球学子打造最高效的备考闭环。
+            </p>
+            <div class="flex justify-center space-x-4">
+                <a href="#features" class="px-8 py-4 bg-blue-600 text-white rounded-lg font-bold shadow-lg hover:bg-blue-700 transition duration-300">
+                    探索核心功能
+                </a>
+                <a href="#tech" class="px-8 py-4 bg-white text-blue-600 border border-blue-200 rounded-lg font-bold shadow hover:bg-blue-50 transition duration-300">
+                    查看技术白皮书
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 痛点与愿景 (Vision) -->
+    <section id="vision" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">为什么我们需要 EconMaster？</h2>
+                <div class="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- 痛点 1 -->
+                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 card-hover">
+                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-6 text-red-500 text-2xl">
+                        <i class="fas fa-search-dollar"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">优质题库获取难</h3>
+                    <p class="text-slate-600">学生难以在统一的平台上获取各大国际考试（AP/A-Level等）的高质量、成体系的官方真题，资料碎片化严重。</p>
+                </div>
+                <!-- 痛点 2 -->
+                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 card-hover">
+                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-6 text-orange-500 text-2xl">
+                        <i class="fas fa-comment-slash"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">缺乏即时有效反馈</h3>
+                    <p class="text-slate-600">传统纸质刷题或PDF无法提供即时的正误判断和详尽解析，导致错题知识点无法被及时消化和巩固。</p>
+                </div>
+                <!-- 痛点 3 -->
+                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 card-hover">
+                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6 text-purple-500 text-2xl">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">语言壁垒与理解成本</h3>
+                    <p class="text-slate-600">对于非英语母语的国际生，全英文的经济学专业词汇是巨大的挑战，缺乏精准的双语辅助理解。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心功能 (Features) -->
+    <section id="features" class="py-20 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">核心功能亮点</h2>
+                <div class="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="space-y-24">
+                <!-- Feature 1 -->
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="w-full md:w-1/2">
+                        <div class="bg-white p-8 rounded-2xl shadow-xl relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+                            <h4 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>即时反馈与详尽解析</h4>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-slate-50 rounded border border-slate-200 text-sm">
+                                    <span class="font-bold text-slate-700">Q:</span> 宏观经济学主要研究什么？
+                                </div>
+                                <div class="p-3 bg-green-50 rounded border border-green-200 text-sm text-green-800">
+                                    <i class="fas fa-check mr-2"></i> (A) 整体经济的波动与趋势
+                                </div>
+                                <div class="p-4 bg-blue-50 rounded-lg text-sm text-blue-900 mt-4 border border-blue-100">
+                                    <span class="font-bold">解析：</span> 宏观经济学关注总产出、通货膨胀和失业等全局指标，而非微观个体行为。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <div class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">沉浸式刷题</div>
+                        <h3 class="text-3xl font-bold mb-4">题库覆盖全面，秒级判题</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed">
+                            收录 AP (Micro & Macro)、IGCSE、A-level 及 DSE 官方真题。做题后系统立即给出正误判断与专业解析。让每一次练习都能形成完整的“测试-反馈-提升”闭环。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="flex flex-col md:flex-row-reverse items-center gap-12">
+                    <div class="w-full md:w-1/2">
+                        <div class="bg-white p-8 rounded-2xl shadow-xl relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-2 h-full bg-purple-500"></div>
+                            <div class="flex items-center justify-between mb-6">
+                                <h4 class="text-xl font-bold"><i class="fas fa-book-dead text-purple-500 mr-2"></i>智能错题本</h4>
+                                <span class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-bold">3 待复习</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="p-3 border-l-4 border-red-400 bg-slate-50 rounded-r flex justify-between items-center">
+                                    <span class="text-sm truncate pr-4">GDP Deflator Calculation...</span>
+                                    <button class="text-blue-500 text-sm hover:underline">同类练习</button>
+                                </div>
+                                <div class="p-3 border-l-4 border-red-400 bg-slate-50 rounded-r flex justify-between items-center">
+                                    <span class="text-sm truncate pr-4">Monetary Policy Expansion...</span>
+                                    <button class="text-blue-500 text-sm hover:underline">同类练习</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <div class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mb-4">自适应学习</div>
+                        <h3 class="text-3xl font-bold mb-4">精准定位薄弱项，举一反三</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed">
+                            做错的题目将自动收录至专属错题本。系统不仅记录错误，更支持一键生成“同类知识点考题”，针对弱点进行靶向突破，彻底扫清知识盲区。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="w-full md:w-1/2">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-6 rounded-xl shadow text-center border border-slate-100">
+                                <i class="fas fa-share-alt text-3xl text-indigo-500 mb-3"></i>
+                                <h4 class="font-bold mb-1">自定义组卷</h4>
+                                <p class="text-xs text-slate-500">根据章节、关键词或难度随机生成专属测验</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow text-center border border-slate-100">
+                                <i class="fas fa-globe-asia text-3xl text-teal-500 mb-3"></i>
+                                <h4 class="font-bold mb-1">中英双语无缝切换</h4>
+                                <p class="text-xs text-slate-500">Flask-Babel 支持，扫清语言障碍</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow text-center border border-slate-100">
+                                <i class="fas fa-mobile-alt text-3xl text-pink-500 mb-3"></i>
+                                <h4 class="font-bold mb-1">多端响应式</h4>
+                                <p class="text-xs text-slate-500">PC、平板、手机完美适配，随时随地刷题</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow text-center border border-slate-100">
+                                <i class="fas fa-key text-3xl text-amber-500 mb-3"></i>
+                                <h4 class="font-bold mb-1">Access Code 控制</h4>
+                                <p class="text-xs text-slate-500">完善的授权系统，方便机构与学校引入使用</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <div class="inline-block px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-semibold mb-4">体验升级</div>
+                        <h3 class="text-3xl font-bold mb-4">更多强大的辅助功能</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed">
+                            支持教师或学生自定义组卷并生成共享链接（Shared Quizzes）。结合 Redis 的缓存架构保证极速响应，内建的权限码（Access Code）体系则为商业化和班级管理铺平道路。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技术架构 (Tech Stack) -->
+    <section id="tech" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4">可靠的技术架构</h2>
+                <div class="w-24 h-1 bg-blue-500 mx-auto rounded-full"></div>
+                <p class="mt-4 text-slate-400">轻量、快速、可扩展</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-blue-400">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">后端核心</h3>
+                    <p class="text-sm text-slate-400">基于 Python Flask 框架，代码逻辑清晰，易于维护与快速迭代。</p>
+                </div>
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-red-400">
+                        <i class="fab fa-html5"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">前端呈现</h3>
+                    <p class="text-sm text-slate-400">HTML5 + CSS3 配合 Jinja2 模板引擎，确保了极佳的 SEO 与首屏加载速度。</p>
+                </div>
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-red-500">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">数据与缓存</h3>
+                    <p class="text-sm text-slate-400">利用 Redis 缓存试卷状态和会话，并提供文件系统作为高可用备用方案。</p>
+                </div>
+                <div class="p-6">
+                    <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-green-400">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">部署与运维</h3>
+                    <p class="text-sm text-slate-400">生产环境支持 Gunicorn + Nginx，并结合 dotenv 完美实现多环境配置管理。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 商业化与未来规划 (Roadmap) -->
+    <section id="future" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">商业化与未来愿景</h2>
+                <div class="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="relative border-l-4 border-blue-200 pl-8 space-y-12 pb-8">
+                    <!-- Phase 1 -->
+                    <div class="relative">
+                        <div class="absolute -left-[41px] top-1 w-6 h-6 bg-blue-600 rounded-full border-4 border-white shadow"></div>
+                        <h3 class="text-xl font-bold text-slate-900">Phase 1: 体验完善与小范围试水 <span class="text-sm font-normal text-blue-600 ml-2">当前阶段</span></h3>
+                        <p class="mt-2 text-slate-600">利用现有的 Access Code 系统，面向国际学校和培训机构发放体验码。收集首批用户的错题数据，优化题目解析与前端交互体验。</p>
+                    </div>
+                    <!-- Phase 2 -->
+                    <div class="relative">
+                        <div class="absolute -left-[41px] top-1 w-6 h-6 bg-slate-300 rounded-full border-4 border-white shadow"></div>
+                        <h3 class="text-xl font-bold text-slate-900">Phase 2: 引入 AI 智能助教 <span class="text-sm font-normal text-slate-500 ml-2">规划中</span></h3>
+                        <p class="mt-2 text-slate-600">集成 LLM (大语言模型) 接口，为学生提供“向 AI 提问”的专属功能。针对每道错题，AI 可根据学生具体的错误选项进行追问式辅导，打造专属私教体验。</p>
+                    </div>
+                    <!-- Phase 3 -->
+                    <div class="relative">
+                        <div class="absolute -left-[41px] top-1 w-6 h-6 bg-slate-300 rounded-full border-4 border-white shadow"></div>
+                        <h3 class="text-xl font-bold text-slate-900">Phase 3: 数据看板与 2B 商业化 <span class="text-sm font-normal text-slate-500 ml-2">长远愿景</span></h3>
+                        <p class="mt-2 text-slate-600">推出“教师/机构端看板”。教师可实时查看班级学生的薄弱知识点分布，支持一键分发针对性作业。实现从 2C (学生自学) 到 2B (机构赋能) 的商业变现闭环。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 py-12 border-t border-slate-200 text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-center mb-6">
+                <i class="fas fa-chart-line text-blue-600 text-2xl mr-2"></i>
+                <span class="font-bold text-xl text-slate-900">Econ<span class="text-blue-600">Master</span></span>
+            </div>
+            <p class="text-slate-500 mb-6">The Next-Gen Economics Practice Platform.</p>
+            <div class="text-sm text-slate-400">
+                &copy; 2026 EconWebsite Project. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
